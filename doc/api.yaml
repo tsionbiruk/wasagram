@@ -1,273 +1,666 @@
-openapi: 3.0.0
-servers:
-  - url: "http://localhost:3000"
+openapi: 3.0.3
 info:
-  title: Fantastic Coffee (decaffeinated)
-  description: Fantastic Coffee (decaffeinated), the skeleton project for Web and Software architecture course
+  title: WasaPhoto
+  description: API documentation for the WasaPhoto project.
   version: 1.0.0
+servers:
+  - url: https://api.sample.com/v1
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas: 
+    user:
+      title: "user"
+      description: object that uses this app
+      type: object
+      properties: 
+        user_id:
+          description: unique identifier for the user. The user name
+          type: string
+          example: "maria"
+          readOnly: false
+        
+        profil:
+          type: array
+          items: 
+            $ref: '#/components/schemas/profil'
+    
+   
+    post: 
+      title: Post
+      description: object that user displays on profil
+      type : object
+      properties: 
+        user_id:
+          type: integer
+        
+        picture:
+          type: string
+          format: binary
+          #think about the encoding in the backend 
+          description: The image file to upload
+                  
+        caption: 
+           type: string
+           description: Additional text associated with the picture
+        
+        date-time: 
+          type: string
+          format: date-time
+          example: "2024-08-07T14:20:00Z"
+          
+        like: 
+          type: integer
+        
+        comment: 
+          type: string
+    
+    photo: 
+      title: Photo
+      description: object that user displays on profil
+      type : object
+      properties: 
+        
+        
+        picture:
+          type: string
+          format: binary
+          #think about the encoding in the backend 
+          description: The image file to upload
+                  
+        caption: 
+           type: string
+           description: Additional text associated with the picture
+    
+    profil: 
+      title: "profil"
+      description: object that displays content and info from the user such as the user’s photos, number of photo, followers and following
+      type: object
+      properties:
+        user_id:
+          type: integer
+          #each profil is linked with a user
+        profile_pic:
+          type: string
+          format: binary
+          #think about the encoding in the backend 
+          description: The image file to upload 
+        
+        stream:
+          type: array
+          items: 
+            $ref: '#/components/schemas/post'
+        
+        followers: 
+          description: The number of users that follow a certain account
+          type: integer
+        
+        following: 
+          description: The number of users a certain account follows
+          type: integer
+          
+        ban:
+          description: The number of accounts a user blocked
+          type: integer
+
+    
+  parameters:
+    Userid:
+      schema:
+        type: integer
+        example: 4
+        readOnly: true 
+      name: Userid
+      in : path
+      required: true
+      description: userid
+    
+    Postid: 
+      schema:
+        type: integer
+        example: 5
+        readOnly: true 
+      name: Postid
+      in : path
+      required: true
+      description: Id of the photo
+    
+    Commentid: 
+      schema:
+        type: integer
+        example: 7
+        readOnly: true 
+      name: Commentid
+      in : path
+      required: true
+      description: Id of the comment
+    
+    Userid_1:
+      schema:
+        type: integer
+        example: 8
+        readOnly: true 
+      name: Userid_1
+      in : path
+      required: true
+      description: a subuser id 
+      
+security:
+  - BearerAuth: []
+
+
 paths:
-  /status:
-    parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
-    get:
-      tags: ["General"]
-      operationId: getStatusMessage
-      summary: Get status message for the user about issues / updates
-      description: |-
-        The response contains a status message meant for the user. It might
-        contains information about current technical issues, update messages
-        or general information.
-      responses:
-        "200":
-          description: Status message available
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StatusInfo"
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-
-  /:
-    get:
-      tags: ["Group 1"]
-      operationId: index
-      summary: Get an index
-      description: |-
-        This is an example of an index API description
-      responses:
-        "200":
-          description: Successful
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-  /context:
-    parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
+  /session:
     post:
-      tags: ["Group 1"]
-      operationId: getContext
-      summary: Another API example
-      description: |-
-        Example description 2
-      responses:
-        "200":
-          description: Request ok
-          headers:
-            X-Access-Token:
-              description: Access token for authenticated requests
-              schema: { type: string }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-  /authenticated:
-    parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
-    get:
-      tags: ["Group 2"]
-      operationId: getAuthenticatedExample
-      summary: Get an endpoint with authentication
-      description: |-
-        Get an endpoint with auth
       security:
-        - LegacyAuth: []
-        - AppToken: []
-      responses:
-        "200":
-          description: Logout successful
-        "500": { $ref: "#/components/responses/InternalServerError" }
-
-  /pictures/{cat}:
-    parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
-      - $ref: "#/components/parameters/cat"
-    get:
-      tags: ["Cat pictures"]
-      operationId: getCatFromPicture
-      summary: Example of a parameter in URL
+      - BearerAuth: []
+    
+    
+      tags: ["login"]
+      summary: Logs in the user
       description: |-
-        Example of a parameter in URL
-      security:
-        - LegacyAuth: []
-      responses:
-        "200":
-          description: Student picture found
-          content:
-            image/png:
-              schema:
-                type: string
-                format: binary
-              example: Picture binary file
-        "404":
-          description: Student picture not found
-        "500": { $ref: "#/components/responses/InternalServerError" }
-
-
-  /autofeeder/{cat}:
-    parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
-      - $ref: "#/components/parameters/cat"
-    put:
-      tags: ["Autofeeder"]
-      operationId: createCatAutofeeder
-      summary: Example of PUT operation
-      security:
-        - LegacyAuth: []
-      responses:
-        "200":
-          description: Auto feed enabled
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-    delete:
-      tags: ["Autofeeder"]
-      operationId: deleteCatAutofeeder
-      summary: Example of DELETE operation
-      security:
-        - LegacyAuth: []
-      responses:
-        "200":
-          description: Auto feed disabled
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "500": { $ref: "#/components/responses/InternalServerError" }
-
-  /session/login:
-    parameters:
-      - $ref: "#/components/parameters/XAppBuild"
-      - $ref: "#/components/parameters/XAppVersion"
-      - $ref: "#/components/parameters/XAppLanguage"
-      - $ref: "#/components/parameters/XAppPlatform"
-    post:
-      tags: ["Session management"]
-      operationId: login
-      summary: Log-in into system
-      description: |-
-        Perform a log-in action using username and password credentials.
-        Returns a token which can be used in authenticated requests.
+        If the user does not exist, it will be created,
+        and an identifier is returned.
+        If the user exists, the user identifier is returned.
+      operationId: doLogin
       requestBody:
+        description: User details
         content:
-          application/x-www-form-urlencoded:
+          application/json:
             schema:
               type: object
               properties:
-                userid:
+                name:
                   type: string
-                  pattern: '^[a-zA-Z0-9]+$'
+                  example: Maria
+                  pattern: 'ˆ.*?$'
                   minLength: 3
-                  maxLength: 255
-                password:
-                  type: string
-                  pattern: '^.*?$'
-                  minLength: 8
-                  maxLength: 255
+                  maxLength: 16
+        required: true
+      responses:
+        '201':
+          description: User log-in action successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  identifier:
+                    
+                    type: string
+                    example: "abcdef012345"
+        '400': 
+          description: Bad Request. Username doesnt fit the description.
+        
+  
+  #updating username  
+  /user/{Userid}:
+    
+    post:
+      security:
+      - BearerAuth: []
+      
+      operationId: "SetUserName"
+      description: change the unique identifier of a pre-existing user.
+      
+      parameters:
+      - $ref: "#/components/parameters/Userid"
+      
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/user"}
+      
+
+      responses: 
+        "201":
+          description: Username Updated successfully
+          content: 
+            application/json: 
+               schema: { $ref: "#/components/schemas/user"}
+        "400":
+
+          description: Bad request. username doesn't exist
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+  
+  #upload a photo
+  /user/{Userid}/photo/:
+    
+    post:
+      security:
+      - BearerAuth: []
+      
+      operationId: "Uploadphoto"
+      summary: creating a new post 
+      description: upload a photo linked to the id of the user.
+      
+      parameters:
+      - $ref: "#/components/parameters/Userid"
+      
+      requestBody: 
+        content: 
+          application/json: 
+            schema: { $ref: "#/components/schemas/photo"}
+      responses: 
+        "201":
+          description: post created succesfully
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/post"}
+        
+        "400":
+          description: Bad Request. username doesnt exist. 
+          
+        "404": 
+          description: wrong photo format
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+    
+  #delete post
+  /user/{Userid}/photo/{Postid}:
+    delete:
+      security:
+      - BearerAuth: []  
+    
+      operationId: "Deletephoto"
+      summary: deleting a post
+      description: delete a post linked to the id of the user.
+      
+      parameters:
+      - $ref: "#/components/parameters/Postid" 
+      - $ref: "#/components/parameters/Userid"
+      
+      responses:
+        "204": { description: photo deleted successfully }
+        "404": { description: photo or username not found }
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+  
+  #liking/unliking a photo
+  /user/{Userid}/photo/{Postid}/like:
+    
+    put:
+      security:
+      - BearerAuth: [] 
+      
+      operationId: "likephoto"
+      summary: add a like to a users post
+      description: increase the like counter by one under the post linked to the users id.
+      
+      parameters:
+        - $ref: "#/components/parameters/Postid" 
+        - $ref: "#/components/parameters/Userid"
+        
       responses:
         "200":
-          description: Login successful
-          headers:
-            X-Access-Token:
-              description: Access token for authenticated requests
-              schema: { type: string }
-        "400": { $ref: "#/components/responses/BadRequest" }
-        "403":
-          description: Login failed
-          headers:
-            X-Message:
-              description: Error message
-              schema: { type: string }
-        "500": { $ref: "#/components/responses/InternalServerError" }
+          description: picture liked. updated count
+          content:
+            application/json:
+              schema:
+               
+                type: integer
+                example: 9
+        "404": { description: picture not found }
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+        
+    delete:
+      
+      
+      tags: ["Unlikephoto"]
+      summary: remove a like to a users post
+      description: decrease the like counter by one under the post linked to the users id.
+      parameters:
+        - $ref: "#/components/parameters/Postid" 
+        - $ref: "#/components/parameters/Userid"
+        
+      responses:
+        "204": 
+          description: picture unliked. updated count
+          content:
+            application/json:
+               schema:
+               
+                type: integer
+                example: 5
+        "400": { description: picture or username not found }
+        "404": { description: picture wasnt previously liked }
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+  
+  #commenting on a photo
+  /user/{Userid}/photo/{Postid}/comment:
+    
+    post:
+      security:
+      - BearerAuth: [] 
+      
+      operationId: "commentPhoto"
+      summary: add a comment to a users post
+      
+      parameters:
+          - $ref: "#/components/parameters/Postid" 
+          - $ref: "#/components/parameters/Userid"
+          
+      requestBody: 
+        content: 
+          application/json: 
+            schema:
+              type: object
+              properties: 
+                commontext: 
+                  type: string
+      
+      responses: 
+        "200": 
+          description: commented
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/post"}
+        "404": 
+          description: bad request. user or post not found.
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+   
+  #uncommenting    
+  /user/{Userid}/photo/{Postid}/comment/{Commentid}:
+    
+    delete:
+      security:
+      - BearerAuth: [] 
+      
+      operationId: "uncommentPhoto"
+      summary: remove a comment from a users post
+      
+      parameters:
+          - $ref: "#/components/parameters/Postid" 
+          - $ref: "#/components/parameters/Userid"
+          - $ref: "#/components/parameters/Commentid"
+          
+      responses:
+        "204":  
+          description: comment deleted successfully 
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/post"}
+        "400": { description: comment not found }
+        "404": { description: only authors can delete the comment }
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+  
+  #follow a user
+  /user/{Userid}/follow/{Userid_1}: 
+    
+    put:
+      security:
+      - BearerAuth: [] 
+      
+      operationId: "followuser"
+      summary: follow a user
+      description: add this user to the list of users our user follows
+      
+      parameters:
+         - $ref: "#/components/parameters/Userid_1"
+         - $ref: "#/components/parameters/Userid"
+         
+      responses: 
+        "200": 
+          description: user followed 
+        
+        "400": 
+          description: user doesnt exist
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+          
+    
+  #get user followers
+  /user/{Userid}/followers: 
+    
+    get:
+      security:
+      - BearerAuth: [] 
+          
+      operationId: "getfollowers"
+      summary: retrive followers 
+      description: get a list of followers for this user id. 
+      
+      parameters:
+           
+          - $ref: "#/components/parameters/Userid"
+          
+      responses: 
+        "200": 
+          description: list of followers
+          content: 
+            application/json: 
+              schema: 
+                type: array
+                items: { $ref: "#/components/schemas/user" }
+        
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+        "404": 
+          description: user not found
+  
+  
+  #get user following  
+  /user/{Userid}/following: 
+    
+    get:
+      security:
+      - BearerAuth: [] 
+          
+      operationId: "getfollowing"
+      summary: retrive followers 
+      description: get a list of followers for this user id. 
+      
+      parameters:
+           
+          - $ref: "#/components/parameters/Userid"
+      responses: 
+        "200": 
+          description: list of following
+          content: 
+            application/json: 
+              schema: 
+                type: array
+                items: { $ref: "#/components/schemas/user" }  
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+        "404": 
+          description: user not found
+   
+  #remove a user from following
+  /user/{Userid}/unfollow/{Userid_1}: 
+    
+    delete:
+      security:
+      - BearerAuth: []
+      
+      operationId: unfollowuser
+      summary: unfollow user
+      description: Remove a user from the following list.
+      
+      parameters:
+         - $ref: "#/components/parameters/Userid_1"
+         - $ref: "#/components/parameters/Userid"
+         
+      responses:
+      
+        "200": { description: unfollowed }
+        
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+  
+  #remove a user from followers
+  /user/{Userid}/followers/{Userid_1}:
+    
+    delete:
+      security:
+      - BearerAuth: [] 
+          
+      operationId: "removeuser"
+      summary: remove user from followers 
+      parameters:
+           
+          - $ref: "#/components/parameters/Userid_1"
+          - $ref: "#/components/parameters/Userid"
+      
+      responses: 
+        "200": 
+          description: user removed
+        "404": 
+          description: user not found
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+  
+ #ban a user
+  /user/{Userid}/ban/{Userid_1}:
+    
+    put:
+      security:
+        - BearerAuth: []
+      operationId: "banUser"
+      summary: Ban a user
+      description: Add this user to the list of banned users for the current user
+      parameters:
+        - $ref: "#/components/parameters/Userid_1"
+        - $ref: "#/components/parameters/Userid"
+      responses:
+        "200":
+          description: User banned successfully
+          links:
+            removeFollower:
+              operationId: removeUser
+              parameters:
+                Userid_1: $request.path.Userid_1
+        "400":
+          description: User not found
+        "404":
+          description: Bad request. You cannot ban yourself
+        "500":
+          description: Internal Server Error - could be an error of authentication
 
+    get: 
+      operationId: "getbannedusers"
+      
+      description: retrive a list of banned users
+      parameters:
+        - $ref: "#/components/parameters/Userid_1"
+        - $ref: "#/components/parameters/Userid"
+      responses: 
+          "200": 
+            description: list retrived
+            content:
+              application/json:
+                schema: 
+                  type: array
+                  items: { $ref: "#/components/schemas/user" }
+  
+#unbanuser
+  /user/{Userid}/unban/{Userid_1}: 
+    
+    delete:
+      security:
+      - BearerAuth: []
+      
+      operationId: unbanuser
+      
+      description: Remove a user from the banned list.
+      parameters:
+         - $ref: "#/components/parameters/Userid_1"
+         - $ref: "#/components/parameters/Userid"
+      responses:
+        "204": { description: unfbanned }
+        "404": { description: user not found }
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+  
+#get user profil
+  /user/{Userid}/profile:
+    get:
+      security:
+      - BearerAuth: []
+      
+      operationId: getuserprofil
+      
+      description: retriev a users profile contaning all the info. 
+      
+      parameters:
+         
+         - $ref: "#/components/parameters/Userid" 
+      responses: 
+        "200": 
+          description: profil retrived
+          content: 
+            application/json: 
+              schema: { $ref: "#/components/schemas/profil" }
+        
+        "404": 
+          description: userid not found. 
+        "500": 
+            description: Internal Server Error - could be error of authentication 
+  
+#getstream
+  /user/{Userid}/stream:
+    get:
+      security:
+      - BearerAuth: []
+      
+      operationId: getmystream
+      
+      description: retriev a users' profile contaning all the info. 
+      
+      parameters:
+         
+         - $ref: "#/components/parameters/Userid"
+      responses: 
+        "200": 
+          description: profil retrived
+          content: 
+            application/json: 
+              schema: { $ref: "#/components/schemas/profil" }
+        
+        "404": 
+          description: userid in user and userid in profil dont match. 
+        "500": 
+            description: Internal Server Error - could be error of authentication            
+  
+  
+      
+          
+      
+    
+  
+      
+      
+      
+    
+    
+    
+        
+  
+    
+      
+      
 
-components:
-  schemas:
-    StatusInfo:
-      title: Status Info
-      type: object
-      properties:
-        status:
-          type: string
-          enum:
-            - info
-            - warning
-            - critical
-            - ""
-        title: { type: string }
-        message: { type: string }
-        url: { type: string }
+    
+      
+          
+      
+    
+      
+              
+      
+      
+  
+  
+    
+  
 
-  responses:
-    Unauthorized:
-      description: The access token is missing or it's expired
-    BadRequest:
-      description: The request was not compliant with the documentation (eg. missing fields, etc)
-    InternalServerError:
-      description: The server encountered an internal error. Further info in server logs
-
-  securitySchemes:
-    LegacyAuth:
-      type: apiKey
-      in: header
-      name: X-App-Token
-      description: |-
-        App session token value. This value is sent by the server in the login
-        and session refresh APIs.
-
-  parameters:
-    XAppVersion:
-      schema:
-        type: string
-        pattern: '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
-        minLength: 1
-        maxLength: 10
-      name: X-App-Version
-      in: header
-      required: true
-      description: App human readable version ("semantic version" format)
-      allowEmptyValue: false
-    XAppBuild:
-      schema: { type: integer }
-      name: X-App-Build
-      in: header
-      required: true
-      description: App build number
-      allowEmptyValue: false
-    XAppLanguage:
-      schema:
-        type: string
-        pattern: '^[a-z]{2}([-_][A-Z]{2})?$'
-        minLength: 2
-        maxLength: 5
-      name: X-App-Language
-      in: header
-      required: true
-      description: App language in ISO 639-1 format
-      allowEmptyValue: false
-    XAppPlatform:
-      schema:
-        type: string
-        enum: [ios, android]
-      name: X-App-Platform
-      in: header
-      required: true
-      description: App operating system / platform
-      allowEmptyValue: false
-    cat:
-      schema:
-        type: string
-        pattern: '^[a-zA-Z]+$'
-        minLength: 3
-        maxLength: 10
-      name: cat
-      in: path
-      required: true
-      description: Cat
-      allowEmptyValue: false
