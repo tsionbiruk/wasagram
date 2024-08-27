@@ -206,8 +206,8 @@ func New(db *sql.DB) (AppDatabase, error) {
 			UserId INTEGER,
 			PhotoId INTEGER,
 			CommentId INTEGER,
-			Nocomments INTEGER,
 			
+			Nocomments INTEGER,
 			Nolikes INTEGER,
 			
 			PRIMARY KEY(PostId, UserId, PhotoId, CommentId),
