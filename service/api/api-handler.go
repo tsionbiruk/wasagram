@@ -4,6 +4,7 @@ import (
 	"net/http"
 )
 
+// redirect all the requests here. ALL off them
 // Handler returns an instance of httprouter.Router that handle APIs registered here
 func (rt *_router) Handler() http.Handler {
 	// Register routes
