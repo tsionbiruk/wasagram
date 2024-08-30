@@ -34,6 +34,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 )
 
 // AppDatabase is the high level interface for the DB
@@ -43,7 +44,7 @@ type AppDatabase interface {
 
 	CreateNewUser(username string) error
 	UpdateUserName(username string, newusername string) error
-	GetUserIdFromUserName(username string) (int64, error)
+
 	FollowUser(username string, target_username string) error
 	UnFollowUser(username string, target_username string) error
 
@@ -51,28 +52,49 @@ type AppDatabase interface {
 
 	BanUsers(username string, target_username string) error
 	UnBanUser(username string, target_username string) error
-	GetBannedUsers(username string) ([]string, error)
 
 	//other users
-	GetUserFollowers(username string) ([]string, error)
-	GetUserFollowing(username string) ([]string, error)
-	GetProfile(username string) (*UserProfileInfo, error)
-	GetStream(username string) ([]Posts, error)
 
-	UploadPhoto(username string, photo []byte) error
-	DeletePost(username string, postId int64) error //when you delete a photo you delete the comment and likes as well
+	UserProfile(username string) (*UserProfileInfo, error)
+	GetStream(username string) ([]photo, error)
+
+	UploadPhoto(username string, caption string, photo []byte) error
+	DeletePost(PhotoId int64) error //when you delete a photo you delete the comment and likes as well
 	PhotoGet(PhotoId int64) ([]byte, error)
 	Photolike(username string, PhotoId int64) error
 	Photounlike(username string, PhotoId int64) error
 
-	comment(username string, PostId int64, text string) error
-	uncomment(username string, PostId int64, CommentId int64) error
+	comment(username string, PhotoId int64, text string) error
+	uncomment(username string, PhotoId int64, CommentId int64) error
 
 	Ping() error
 }
 
-type appdbimpl struct {
+type wasabase struct {
 	c *sql.DB
+}
+
+type UserProfileInfo struct {
+	username  string
+	profilPic []byte
+	followers []string
+	following []string
+	banned    []string
+	photo     []photo
+}
+
+type photo struct {
+	photoId     int64
+	photo_png   []byte
+	caption     string
+	upload_time time.Time
+	Comments    []CommentData
+	likes       []string
+}
+
+type CommentData struct {
+	upload_time time.Time
+	body        string
 }
 
 // New returns a new instance of AppDatabase based on the SQLite connection `db`.
@@ -92,8 +114,9 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='Users';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
 		usersTable := `CREATE TABLE Users (
-			Profil_pic BLOB,qq
+			
 			username STRING,
+			Profil_pic BLOB,
 			PRIMARY KEY(username)
 			
 		);`
@@ -106,7 +129,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='Followes';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
 		followesTable := `CREATE TABLE Followes(
-			username STRING,
+			username STRING, 
 			target_username STRING,
 			PRIMARY KEY(username, target_username),
 			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE,
@@ -201,11 +224,11 @@ func New(db *sql.DB) (AppDatabase, error) {
 		}
 	}
 
-	return &appdbimpl{
+	return &wasabase{
 		c: db,
 	}, nil
 }
 
-func (db *appdbimpl) Ping() error {
+func (db *wasabase) Ping() error {
 	return db.c.Ping()
 }
