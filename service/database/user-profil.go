@@ -9,7 +9,7 @@ import (
 func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 	// get profil_pic
 
-	row := db.c.QueryRow("SELECT username, profil_pic FROM Users WHERE username = '%s'", username)
+	row := db.c.QueryRow("SELECT username, profil_pic FROM Users WHERE username = ?", username)
 
 	// Define variables to hold the query result
 	var userProfile UserProfileInfo
@@ -29,7 +29,7 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 
 	//get followers
 	followers := []string{}
-	rows, err := db.c.Query("SELECT target_username FROM Followes WHERE username = %s", username)
+	rows, err := db.c.Query("SELECT target_username FROM Followes WHERE username = ?", username)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 
 	//get following
 	following := []string{}
-	rows, err = db.c.Query("SELECT username FROM Followes WHERE target_username = %s", username)
+	rows, err = db.c.Query("SELECT username FROM Followes WHERE target_username = ?", username)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +70,7 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 	//get banned users
 
 	banned := []string{}
-	rows, err = db.c.Query("SELECT target_username FROM Bans WHERE username = %s", username)
+	rows, err = db.c.Query("SELECT target_username FROM Bans WHERE username =?", username)
 	if err != nil {
 		return nil, err
 	}
@@ -88,10 +88,41 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 		return nil, fmt.Errorf("error during row iteration: %w", err)
 	}
 
-	//get photos
+	//get counts
+	var photo_count int64
+	err = db.c.QueryRow("SELECT COUNT(*) FROM Photos WHERE username=?", username).Scan(&photo_count)
+	if err != nil {
+		// If there's an error, handle it appropriately
+		fmt.Printf("Error executing query for username %s: %v\n", username, err)
 
+	}
+
+	var follower_count int64
+	err = db.c.QueryRow("SELECT COUNT(*) FROM Followes WHERE target_username=?", username).Scan(&follower_count)
+
+	if err != nil {
+		fmt.Println("Error executing query:", err)
+
+	}
+
+	var following_count int64
+	err = db.c.QueryRow("SELECT COUNT(*) FROM Followes WHERE username=?", username).Scan(&following_count)
+
+	if err != nil {
+		fmt.Println("Error executing query:", err)
+
+	}
+
+	var banned_count int64
+	err = db.c.QueryRow("SELECT COUNT(*) FROM Bans WHERE username=?", username).Scan(&banned_count)
+
+	if err != nil {
+		fmt.Println("Error executing query:", err)
+	}
+
+	//get photos
 	photos := []photo{}
-	rows, err = db.c.Query("SELECT photoId,photo_png,caption,upload_time FROM Photos WHERE username = %s", username)
+	rows, err = db.c.Query("SELECT photoId,photo_png,caption,upload_time FROM Photos WHERE username =? ORDER BY upload_time DESC", username)
 	if err != nil {
 		return nil, err
 	}
@@ -104,6 +135,14 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan photo: %w", err)
 		}
+
+		var comment_count int64
+		err = db.c.QueryRow("SELECT COUNT(*) FROM Comments WHERE PhotoId=?", p.photoId).Scan(&comment_count)
+
+		if err != nil {
+			fmt.Println("Error executing query:", err)
+		}
+		p.comment_count = comment_count
 
 		comments := []CommentData{}
 		commentRows, err := db.c.Query("SELECT body, upload_time FROM Comments WHERE photoId: %s", p.photoId)
@@ -125,6 +164,14 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 		}
 		p.Comments = comments
 
+		var like_count int64
+		err = db.c.QueryRow("SELECT COUNT(*) FROM Likes WHERE PhotoId=?", p.photoId).Scan(&like_count)
+
+		if err != nil {
+			fmt.Println("Error executing query:", err)
+		}
+		p.like_count = like_count
+
 		likes := []string{}
 		likeRows, err := db.c.Query("SELECT username FROM Likes WHERE photoId = ?", p.photoId)
 		if err != nil {
@@ -139,6 +186,7 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 				return nil, err
 			}
 			likes = append(likes, user)
+
 		}
 		if err = rows.Err(); err != nil {
 			return nil, err
@@ -154,6 +202,6 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 	}
 	userProfile.photo = photos
 
-	return &UserProfileInfo{username, profilPic, followers, following, banned, photos}, nil
+	return &UserProfileInfo{username, profilPic, followers, follower_count, following, following_count, banned, banned_count, photos, photo_count}, nil
 
 }
