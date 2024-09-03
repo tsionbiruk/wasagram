@@ -105,10 +105,10 @@ func (db *wasabase) comment(username string, PhotoId int64, text string) error {
 	return nil
 }
 
-func (db *wasabase) uncomment(username string, PhotoId int64, CommentId int64) error {
+func (db *wasabase) uncomment(CommentId int64) error {
 	// Check if the comment exists
 	var exists bool
-	err := db.c.QueryRow("SELECT EXISTS(SELECT 1 FROM Comments WHERE CommentId=? AND PhotoId=? AND username=?)", CommentId, PhotoId, username).Scan(&exists)
+	err := db.c.QueryRow("SELECT EXISTS(SELECT 1 FROM Comments WHERE CommentId=?)", CommentId).Scan(&exists)
 	if err != nil {
 		return fmt.Errorf("failed to check comment existence: %w", err)
 	}
@@ -117,7 +117,7 @@ func (db *wasabase) uncomment(username string, PhotoId int64, CommentId int64) e
 	}
 
 	// Delete the comment
-	_, err = db.c.Exec("DELETE FROM Comments WHERE CommentId=? AND PhotoId=? AND username=?", CommentId, PhotoId, username)
+	_, err = db.c.Exec("DELETE FROM Comments WHERE CommentId=?", CommentId)
 	if err != nil {
 		return fmt.Errorf("failed to delete comment: %w", err)
 	}

@@ -7,15 +7,14 @@ import (
 )
 
 // userinteractions: followuser, unfollowuser, banuser, unbanuser,
-//getstream
 
 func (db *wasabase) BanUsers(username string, target_username string) error {
 
 	var exists bool
-	err := db.c.QueryRow("SELECT 1 FROM Bans WHERE username=? AND target_username=?", username, target_username).Scan(&exists)
+	err := db.c.QueryRow("SELECT username FROM Users WHERE username=? ", target_username).Scan(&exists)
 	if err == nil {
 
-		return fmt.Errorf("user %s has already banned %s", username, target_username)
+		return fmt.Errorf("%s doesnt exist", target_username)
 	} else if err != sql.ErrNoRows {
 
 		return fmt.Errorf("failed to check ban status: %w", err)
@@ -43,10 +42,10 @@ func (db *wasabase) FollowUser(username string, target_username string) error {
 	err := db.c.QueryRow("SELECT 1 FROM Followes WHERE username=? AND target_username=?", username, target_username).Scan(&exists)
 	if err == nil {
 
-		return fmt.Errorf("user %s already followes %s", username, target_username)
+		return fmt.Errorf("user %s already follows %s", username, target_username)
 	} else if err != sql.ErrNoRows {
 
-		return fmt.Errorf("failed to check follwoing status: %w", err)
+		return fmt.Errorf("failed to check following status: %w", err)
 	}
 
 	_, err = db.c.Exec("INSERT INTO Followes (username, target_username) VALUES (?, ?)", username, target_username)

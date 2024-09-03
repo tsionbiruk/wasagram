@@ -53,6 +53,9 @@ type AppDatabase interface {
 
 	BanUsers(username string, target_username string) error
 	UnBanUser(username string, target_username string) error
+	Getfollowing(username string) ([]string, error)
+	Getfollowers(username string) ([]string, error)
+	Getbannedusers(username string) ([]string, error)
 
 	//other users
 
@@ -66,7 +69,7 @@ type AppDatabase interface {
 	Photounlike(username string, PhotoId int64) error
 
 	comment(username string, PhotoId int64, text string) error
-	uncomment(username string, PhotoId int64, CommentId int64) error
+	uncomment(CommentId int64) error
 
 	Ping() error
 }
@@ -78,14 +81,11 @@ type wasabase struct {
 type UserProfileInfo struct {
 	username        string
 	profilPic       []byte
-	followers       []string
 	follower_count  int64
-	following       []string
 	following_count int64
-	banned          []string
 	banned_count    int64
 	photo           []photo
-	photo_count     int64
+	photo_count     int
 }
 
 type photo struct {
@@ -166,7 +166,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='Photos';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
 		photosTable := `CREATE TABLE Photos (
-			PhotoId INTEGER,
+			PhotoId INTEGER AUTOINCREMENT,
 			username STRING,
 			photo_png BLOB,
 			caption TEXT,
@@ -198,7 +198,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='Comments';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
 		commentsTable := `CREATE TABLE Comments (
-			CommentId INTEGER,
+			CommentId INTEGER AUTOINCREMENT,
 			username STRING,
 			PhotoId INTEGER,
 			body TEXT,

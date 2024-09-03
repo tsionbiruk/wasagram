@@ -11,9 +11,9 @@ import (
 
 func (db *wasabase) CreateNewUser(username string) error {
 	var Profil_pic []byte
-	err := db.c.QueryRow("SELECT * FROM Users WHERE username='%s'", username).Scan()
+	err := db.c.QueryRow("SELECT * FROM Users WHERE username=?", username).Scan()
 	if errors.Is(err, sql.ErrNoRows) {
-		_, err = db.c.Exec("INSERT INTO Users VALUES ('%s',%w)", username, Profil_pic)
+		_, err = db.c.Exec("INSERT INTO Users VALUES (?,?)", username, Profil_pic)
 		if err != nil {
 			return fmt.Errorf("failed to insert '%s' into the Users table: %w", username, err)
 		}
@@ -22,7 +22,7 @@ func (db *wasabase) CreateNewUser(username string) error {
 }
 
 func (db *wasabase) UpdateUserName(username string, newusername string) error {
-	_, err := db.c.Exec("UPDATE Users SET username='%s' WHERE username='%s'", newusername, username)
+	_, err := db.c.Exec("UPDATE Users SET username=? WHERE username=?", newusername, username)
 	if err != nil {
 		return err
 	}
