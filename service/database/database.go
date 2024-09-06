@@ -45,14 +45,14 @@ type AppDatabase interface {
 	CreateNewUser(username string) error
 	UpdateUserName(username string, newusername string) error
 
-	FollowUser(username string, target_username string) error
-	UnFollowUser(username string, target_username string) error
+	FollowUser(username string, target_username string) (string, error)
+	UnFollowUser(username string, target_username string) (string, error)
 
 	GetAllUsers() ([]string, error)
 	GetAuthorId(PhotoId int64) (string, error)
 
-	BanUsers(username string, target_username string) error
-	UnBanUser(username string, target_username string) error
+	BanUsers(username string, target_username string) (string, error)
+	UnBanUser(username string, target_username string) (string, error)
 	Getfollowing(username string) ([]string, error)
 	Getfollowers(username string) ([]string, error)
 	Getbannedusers(username string) ([]string, error)
@@ -63,14 +63,14 @@ type AppDatabase interface {
 	GetStream(username string) ([]photo, []string, error)
 
 	UploadPhoto(username string, caption string, photo []byte) error
-	DeletePost(PhotoId int64) error //when you delete a photo you delete the comment and likes as well
-	PhotoGet(PhotoId int64) ([]byte, error)
+	DeletePost(PhotoId int64) (string, error) //when you delete a photo you delete the comment and likes as well
+	Getlikes(PhotoId int64) ([]string, error)
 	Photolike(username string, PhotoId int64) error
 	Photounlike(username string, PhotoId int64) error
 
 	comment(username string, PhotoId int64, text string) error
 	uncomment(CommentId int64) error
-
+	Getcomment(PhotoId int64) ([]string, error)
 	Ping() error
 }
 

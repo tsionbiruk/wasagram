@@ -13,7 +13,9 @@ require (
 )
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/felixge/httpsnoop v1.0.3 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	golang.org/x/sys v0.11.0 // indirect

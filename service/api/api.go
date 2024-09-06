@@ -38,7 +38,13 @@ package api
 
 import (
 	"errors"
+	"fmt"
+	"time"
+
 	"net/http"
+	"strings"
+
+	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
@@ -94,4 +100,80 @@ type _router struct {
 	baseLogger logrus.FieldLogger
 
 	db database.AppDatabase
+}
+
+func (rt *_router) Authorize(w http.ResponseWriter, r *http.Request, username string) bool {
+	// Extract token from Authorization header
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
+		return false
+	}
+
+	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+
+	// Validate the token (this example uses JWT)
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %s", token.Header["alg"])
+		}
+		return []byte("your-secret-key"), nil
+	})
+
+	if err != nil || !token.Valid {
+		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		return false
+	}
+
+	// Optional: Check additional claims or permissions if needed
+	// e.g., check user role, token expiry, etc.
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		// Example: Access username from claims
+		username := claims["username"].(string)
+
+		// Attach username to request context or //use as needed
+		fmt.Println("Username:", username)
+	}
+
+	return true
+}
+
+type UserClaims struct {
+	Username string `json:"username"`
+
+	jwt.RegisteredClaims
+}
+
+func (rt *_router) getUserInfoFromRequest(r *http.Request) (*UserClaims, error) {
+	authHeader := r.Header.Get("Authorization")
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		return nil, fmt.Errorf("authorization header format is bearer token")
+	}
+	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+
+	// Parse the JWT token
+	token, err := jwt.ParseWithClaims(tokenStr, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
+		// Verify the token signature using a secret or public key
+		return []byte("your-secret-key"), nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("invalid token: %w", err)
+	}
+
+	// Extract user claims
+	if claims, ok := token.Claims.(*UserClaims); ok && token.Valid {
+		return claims, nil
+	} else {
+		return nil, fmt.Errorf("invalid token claims")
+	}
+}
+
+func GenerateToken(userID string) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(time.Hour * 1).Unix(), // Token expires in 1 hour
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte("your-secret-key"))
 }

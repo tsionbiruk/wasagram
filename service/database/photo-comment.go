@@ -46,6 +46,29 @@ func (db *wasabase) Photounlike(username string, PhotoId int64) error {
 	return nil
 }
 
+func (db *wasabase) Getlikes(PhotoId int64) ([]string, error) {
+	likes := []string{}
+	likeRows, err := db.c.Query("SELECT username FROM Likes WHERE photoId = ?", PhotoId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer likeRows.Close()
+	for likeRows.Next() {
+		var user string
+		err := likeRows.Scan(&user)
+		if err != nil {
+			return nil, err
+		}
+		likes = append(likes, user)
+
+	}
+	if err = likeRows.Err(); err != nil {
+		return nil, err
+	}
+	return likes, nil
+}
+
 func (db *wasabase) UploadPhoto(username string, caption string, photo []byte) error {
 
 	_, err := db.c.Exec("INSERT INTO Photos (PhotoId, username , photo_png, caption, upload_time) VALUES (NULL,?, ?, ?, ?)", username, photo, caption, time.Now())
@@ -55,33 +78,24 @@ func (db *wasabase) UploadPhoto(username string, caption string, photo []byte) e
 	return nil
 }
 
-func (db *wasabase) DeletePost(PhotoId int64) error {
+func (db *wasabase) DeletePost(PhotoId int64) (string, error) {
 	// Check if the photo exists
 	var exists bool
 	err := db.c.QueryRow("SELECT EXISTS(SELECT 1 FROM Photos WHERE PhotoId=?)", PhotoId).Scan(&exists)
 	if err != nil {
-		return fmt.Errorf("failed to check photo existence: %w", err)
+		return "", fmt.Errorf("failed to check photo existence: %w", err)
 	}
 	if !exists {
-		return fmt.Errorf("no photo found with PhotoId: %d", PhotoId)
+		return "", fmt.Errorf("no photo found with PhotoId: %d", PhotoId)
 	}
 
 	// Delete the photo
 	_, err = db.c.Exec("DELETE FROM Photos WHERE PhotoId=?", PhotoId)
 	if err != nil {
-		return fmt.Errorf("failed to delete photo: %w", err)
+		return "", fmt.Errorf("failed to delete photo: %w", err)
 	}
 
-	return nil
-}
-
-func (db *wasabase) PhotoGet(PhotoId int64) ([]byte, error) {
-	var photo []byte
-	err := db.c.QueryRow("SELECT photo_png FROM Photos WHERE PhotoId=?", PhotoId).Scan(&photo)
-	if err != nil {
-		return nil, err
-	}
-	return photo, nil
+	return "photo deleted succesfully!", nil
 }
 
 func (db *wasabase) comment(username string, PhotoId int64, text string) error {
@@ -122,4 +136,27 @@ func (db *wasabase) uncomment(CommentId int64) error {
 		return fmt.Errorf("failed to delete comment: %w", err)
 	}
 	return nil
+}
+
+func (db *wasabase) Getcomment(PhotoId int64) ([]string, error) {
+	comments := []string{}
+	commentRows, err := db.c.Query("SELECT body FROM Comments WHERE photoId = ?", PhotoId)
+	if err != nil {
+		return nil, err
+	}
+
+	defer commentRows.Close()
+	for commentRows.Next() {
+		var user string
+		err := commentRows.Scan(&user)
+		if err != nil {
+			return nil, err
+		}
+		comments = append(comments, user)
+
+	}
+	if err = commentRows.Err(); err != nil {
+		return nil, err
+	}
+	return comments, nil
 }
