@@ -28,13 +28,14 @@ func (db *wasabase) BanUsers(username string, target_username string) (string, e
 	return "can not ban yourself", nil
 }
 
-func (db *wasabase) UnBanUser(username string, target_username string) error {
-
-	_, err := db.c.Exec("DELETE FROM Bans WHERE username=? AND target_username=?", username, target_username)
-	if err != nil {
-		return err
+func (db *wasabase) UnBanUser(username string, target_username string) (string, error) {
+	if username != target_username {
+		_, err := db.c.Exec("DELETE FROM Bans WHERE username=? AND target_username=?", username, target_username)
+		if err != nil {
+			return "", err
+		}
 	}
-	return nil
+	return "can not unban yourself", nil
 }
 
 func (db *wasabase) FollowUser(username string, target_username string) (string, error) {

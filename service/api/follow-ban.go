@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -10,8 +11,7 @@ import (
 
 func (rt *_router) followuser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) string {
 	w.Header().Set("Content-Type", "application/json")
-	username := ps.ByName("username")
-	target_username := ps.ByName("target_username")
+	username := ps.ByName("user")
 
 	userClaims, err := rt.getUserInfoFromRequest(r)
 	if err != nil {
@@ -20,11 +20,11 @@ func (rt *_router) followuser(w http.ResponseWriter, r *http.Request, ps httprou
 		return ""
 	}
 
-	if token := rt.Authorize(w, r, userClaims.Issuer); !token {
+	if token := rt.Authorize(w, r, userClaims.Username); !token {
 		return ""
 	}
 
-	_, err = rt.db.FollowUser(username, target_username)
+	_, err = rt.db.FollowUser(userClaims.Username, username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to follow target: %s", err.Error()), http.StatusInternalServerError)
 		return "can not follow yourself"
@@ -34,8 +34,8 @@ func (rt *_router) followuser(w http.ResponseWriter, r *http.Request, ps httprou
 
 func (rt *_router) unfolloweruser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) string {
 	w.Header().Set("Content-Type", "application/json")
-	username := ps.ByName("username")
-	target_username := ps.ByName("target_username")
+
+	username := ps.ByName("user")
 
 	userClaims, err := rt.getUserInfoFromRequest(r)
 	if err != nil {
@@ -48,7 +48,7 @@ func (rt *_router) unfolloweruser(w http.ResponseWriter, r *http.Request, ps htt
 		return ""
 	}
 
-	_, err = rt.db.UnFollowUser(username, target_username)
+	_, err = rt.db.UnFollowUser(userClaims.Username, username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to unfollow user target: %s", err.Error()), http.StatusInternalServerError)
 		return "can not unfollow yourself!"
@@ -58,8 +58,8 @@ func (rt *_router) unfolloweruser(w http.ResponseWriter, r *http.Request, ps htt
 
 func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
-	username := ps.ByName("username")
-	target_username := ps.ByName("target_username")
+
+	username := ps.ByName("user")
 
 	userClaims, err := rt.getUserInfoFromRequest(r)
 	if err != nil {
@@ -71,7 +71,7 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 		return
 	}
 
-	_, err = rt.db.BanUsers(username, target_username)
+	_, err = rt.db.BanUsers(userClaims.Username, username)
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to ban target: %s", err.Error()), http.StatusInternalServerError)
@@ -81,8 +81,8 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 
 func (rt *_router) unban(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) string {
 	w.Header().Set("Content-Type", "application/json")
-	username := ps.ByName("username")
-	target_username := ps.ByName("target_username")
+
+	username := ps.ByName("user")
 
 	userClaims, err := rt.getUserInfoFromRequest(r)
 	if err != nil {
@@ -95,7 +95,7 @@ func (rt *_router) unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return ""
 	}
 
-	_, err = rt.db.UnBanUser(username, target_username)
+	_, err = rt.db.UnBanUser(userClaims.Username, username)
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to unban target: %s", err.Error()), http.StatusInternalServerError)
@@ -103,4 +103,91 @@ func (rt *_router) unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	}
 
 	return "user banned succesfully!"
+}
+
+func (rt *_router) getFollowers(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	w.Header().Set("Content-Type", "application/json")
+	username := ps.ByName("user")
+
+	userClaims, err := rt.getUserInfoFromRequest(r)
+	if err != nil {
+		// Handle error (e.g., invalid or missing token)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if token := rt.Authorize(w, r, userClaims.Username); !token {
+		return
+	}
+
+	followers, err := rt.db.Getfollowers(username)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get followers: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	jsonstr, err := json.Marshal(followers)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to marshal followed users: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+	_, _ = w.Write([]byte(jsonstr))
+}
+
+func (rt *_router) Getfollowing(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	w.Header().Set("Content-Type", "application/json")
+	username := ps.ByName("user")
+
+	userClaims, err := rt.getUserInfoFromRequest(r)
+	if err != nil {
+		// Handle error (e.g., invalid or missing token)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if token := rt.Authorize(w, r, userClaims.Username); !token {
+		return
+	}
+
+	following, err := rt.db.Getfollowing(username)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get followers: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	jsonstr, err := json.Marshal(following)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to marshal followed users: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+	_, _ = w.Write([]byte(jsonstr))
+}
+
+func (rt *_router) getBanned(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+	w.Header().Set("Content-Type", "application/json")
+	username := ps.ByName("user")
+
+	userClaims, err := rt.getUserInfoFromRequest(r)
+	if err != nil {
+		// Handle error (e.g., invalid or missing token)
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if token := rt.Authorize(w, r, userClaims.Username); !token {
+		return
+	}
+
+	banned, err := rt.db.Getbannedusers(username)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get followers: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	jsonstr, err := json.Marshal(banned)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to marshal followed users: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+	_, _ = w.Write([]byte(jsonstr))
 }

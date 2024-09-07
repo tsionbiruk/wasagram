@@ -13,7 +13,7 @@ import (
 
 func (rt *_router) postComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) ([]string, error) {
 	w.Header().Set("Content-Type", "application/json")
-	username := ps.ByName("username")
+	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")
 
 	userClaims, err := rt.getUserInfoFromRequest(r)
@@ -56,7 +56,7 @@ func (rt *_router) postComments(w http.ResponseWriter, r *http.Request, ps httpr
 
 func (rt *_router) deleteComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) ([]string, error) {
 	w.Header().Set("Content-Type", "application/json")
-	username := ps.ByName("username")
+	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")
 
 	userClaims, err := rt.getUserInfoFromRequest(r)

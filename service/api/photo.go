@@ -70,7 +70,7 @@ func (rt *_router) UploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 func (rt *_router) Photolike(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) ([]string, error) {
 	w.Header().Set("Content-Type", "application/json")
-	username := ps.ByName("username")
+	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")
 
 	userClaims, err := rt.getUserInfoFromRequest(r)
@@ -100,7 +100,7 @@ func (rt *_router) Photolike(w http.ResponseWriter, r *http.Request, ps httprout
 
 func (rt *_router) Photounlike(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) ([]string, error) {
 	w.Header().Set("Content-Type", "application/json")
-	username := ps.ByName("username")
+	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")
 
 	userClaims, err := rt.getUserInfoFromRequest(r)
@@ -134,7 +134,7 @@ func (rt *_router) Photounlike(w http.ResponseWriter, r *http.Request, ps httpro
 func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) (string, error) {
 	w.Header().Set("Content-Type", "application/json")
 	//username of the persons post you want to delete
-	username := ps.ByName("username")
+	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")
 
 	userClaims, err := rt.getUserInfoFromRequest(r)
