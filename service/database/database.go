@@ -68,8 +68,8 @@ type AppDatabase interface {
 	Photolike(username string, PhotoId int64) error
 	Photounlike(username string, PhotoId int64) error
 
-	comment(username string, PhotoId int64, text string) error
-	uncomment(CommentId int64) error
+	Comment(username string, PhotoId int64, text string) error
+	Uncomment(CommentId int64) error
 	Getcomment(PhotoId int64) ([]string, error)
 	Ping() error
 }

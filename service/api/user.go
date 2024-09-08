@@ -10,7 +10,7 @@ import (
 	"github.com/tsionbiruk/wasagram/service/api/reqcontext"
 )
 
-func (rt *_router) getProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+func (rt *_router) GetProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 
@@ -40,7 +40,7 @@ func (rt *_router) getProfile(w http.ResponseWriter, r *http.Request, ps httprou
 	_, _ = w.Write(jsonstr)
 }
 
-func (rt *_router) getStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 
@@ -78,7 +78,7 @@ func (rt *_router) getStream(w http.ResponseWriter, r *http.Request, ps httprout
 
 }
 
-func (rt *_router) rename(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+func (rt *_router) Rename(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 
@@ -112,17 +112,16 @@ func (rt *_router) rename(w http.ResponseWriter, r *http.Request, ps httprouter.
 		return
 	}
 
-	if username == userClaims.Username {
-		err = rt.db.UpdateUserName(username, newname)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to rename user, can not rename other users: %s", err.Error()), http.StatusInternalServerError)
-			return
-		}
+	err = rt.db.UpdateUserName(username, newname)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to rename user, can not rename other users: %s", err.Error()), http.StatusInternalServerError)
+		return
+
 	}
 
 }
 
-func (rt *_router) getUsers(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+func (rt *_router) GetUsers(w http.ResponseWriter, _ *http.Request, _ httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
 	users, err := rt.db.GetAllUsers()
@@ -139,7 +138,7 @@ func (rt *_router) getUsers(w http.ResponseWriter, r *http.Request, ps httproute
 	_, _ = w.Write(jsonstr)
 }
 
-func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+func (rt *_router) DoLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
 	body, err := io.ReadAll(r.Body)
@@ -165,10 +164,11 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 		http.Error(w, fmt.Sprintf("Failed to either retrieve or create user: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-
+	//GENERATE TOKENS HERE
+	//MARSHAL TH ETOKEN NOT THE USERNAME
 	jsonstr, err := json.Marshal(username)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to marshal Username %d: %s", username, err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to marshal Username %s: %s", username, err.Error()), http.StatusInternalServerError)
 		return
 	}
 	_, _ = w.Write([]byte(jsonstr))

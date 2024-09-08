@@ -169,9 +169,9 @@ func (rt *_router) getUserInfoFromRequest(r *http.Request) (*UserClaims, error) 
 	}
 }
 
-func GenerateToken(userID string) (string, error) {
+func GenerateToken(username string) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userID,
+		"user_id": username,
 		"exp":     time.Now().Add(time.Hour * 1).Unix(), // Token expires in 1 hour
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

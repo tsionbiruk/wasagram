@@ -8,10 +8,9 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/tsionbiruk/wasagram/service/api/reqcontext"
 )
 
-func (rt *_router) postComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) ([]string, error) {
+func (rt *_router) PostComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params) ([]string, error) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")
@@ -46,7 +45,7 @@ func (rt *_router) postComments(w http.ResponseWriter, r *http.Request, ps httpr
 		return nil, nil
 	}
 
-	err = rt.db.comment(username, PhotoId, text)
+	err = rt.db.Comment(username, PhotoId, text)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to post comment: %s", err.Error()), http.StatusInternalServerError)
 		return nil, err
@@ -54,7 +53,7 @@ func (rt *_router) postComments(w http.ResponseWriter, r *http.Request, ps httpr
 	return rt.db.Getcomment(PhotoId)
 }
 
-func (rt *_router) deleteComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) ([]string, error) {
+func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params) ([]string, error) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")
@@ -83,7 +82,7 @@ func (rt *_router) deleteComments(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	if username == userClaims.Username {
-		err = rt.db.uncomment(CommentId)
+		err = rt.db.Uncomment(CommentId)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to delete comment: %s", err.Error()), http.StatusInternalServerError)
 			return nil, nil

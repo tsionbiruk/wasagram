@@ -98,7 +98,7 @@ func (db *wasabase) DeletePost(PhotoId int64) (string, error) {
 	return "photo deleted succesfully!", nil
 }
 
-func (db *wasabase) comment(username string, PhotoId int64, text string) error {
+func (db *wasabase) Comment(username string, PhotoId int64, text string) error {
 	// Check if the photo exists
 	var exists bool
 	err := db.c.QueryRow("SELECT EXISTS(SELECT 1 FROM Photos WHERE PhotoId=?)", PhotoId).Scan(&exists)
@@ -119,7 +119,7 @@ func (db *wasabase) comment(username string, PhotoId int64, text string) error {
 	return nil
 }
 
-func (db *wasabase) uncomment(CommentId int64) error {
+func (db *wasabase) Uncomment(CommentId int64) error {
 	// Check if the comment exists
 	var exists bool
 	err := db.c.QueryRow("SELECT EXISTS(SELECT 1 FROM Comments WHERE CommentId=?)", CommentId).Scan(&exists)

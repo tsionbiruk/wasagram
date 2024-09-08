@@ -9,7 +9,7 @@ import (
 	"github.com/tsionbiruk/wasagram/service/api/reqcontext"
 )
 
-func (rt *_router) followuser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) string {
+func (rt *_router) Followuser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) string {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 
@@ -32,7 +32,7 @@ func (rt *_router) followuser(w http.ResponseWriter, r *http.Request, ps httprou
 	return "user followed succesfully"
 }
 
-func (rt *_router) unfolloweruser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) string {
+func (rt *_router) Unfolloweruser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) string {
 	w.Header().Set("Content-Type", "application/json")
 
 	username := ps.ByName("user")
@@ -56,7 +56,7 @@ func (rt *_router) unfolloweruser(w http.ResponseWriter, r *http.Request, ps htt
 	return "user unfollowed!"
 }
 
-func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 
 	username := ps.ByName("user")
@@ -79,7 +79,7 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	}
 }
 
-func (rt *_router) unban(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) string {
+func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) string {
 	w.Header().Set("Content-Type", "application/json")
 
 	username := ps.ByName("user")
@@ -105,7 +105,7 @@ func (rt *_router) unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	return "user banned succesfully!"
 }
 
-func (rt *_router) getFollowers(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 
@@ -163,7 +163,7 @@ func (rt *_router) Getfollowing(w http.ResponseWriter, r *http.Request, ps httpr
 	_, _ = w.Write([]byte(jsonstr))
 }
 
-func (rt *_router) getBanned(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
+func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 
