@@ -85,13 +85,13 @@ type wasabase struct {
 }
 
 type UserProfileInfo struct {
-	username        string
-	profilPic       []byte
-	follower_count  int64
-	following_count int64
-	banned_count    int64
-	photo           []photo
-	photo_count     int
+	Username        string
+	ProfilPic       []byte
+	Follower_count  int64
+	Following_count int64
+	Banned_count    int64
+	Photo           []photo
+	Photo_count     int
 }
 
 type photo struct {

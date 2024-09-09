@@ -228,7 +228,7 @@ paths:
             description: Internal Server Error - could be error of authentication 
   
   #upload a photo
-  /user/{Userid}/photo/:
+  /user/{username}/photo/:
     
     post:
       security:
@@ -261,7 +261,7 @@ paths:
             description: Internal Server Error - could be error of authentication 
     
   #delete post
-  /user/{Userid}/photo/{Postid}:
+  /user/{username}/photo/{Postid}:
     delete:
       security:
       - BearerAuth: []  
@@ -281,7 +281,7 @@ paths:
             description: Internal Server Error - could be error of authentication 
   
   #liking/unliking a photo
-  /user/{Userid}/photo/{Postid}/like:
+  /user/{username}/target_user/{target_username}/photo/{Postid}/like:
     
     put:
       security:
@@ -302,8 +302,8 @@ paths:
             application/json:
               schema:
                
-                type: integer
-                example: 9
+                type: []string
+                example: ("jessica", "abel")
         "404": { description: picture not found }
         "500": 
             description: Internal Server Error - could be error of authentication 
@@ -325,15 +325,15 @@ paths:
             application/json:
                schema:
                
-                type: integer
-                example: 5
+                type: []strings
+                example: ("jessica", "abel")
         "400": { description: picture or username not found }
         "404": { description: picture wasnt previously liked }
         "500": 
             description: Internal Server Error - could be error of authentication 
   
   #commenting on a photo
-  /user/{Userid}/photo/{Postid}/comment:
+  /user/{username}/photo/{Postid}/comment:
     
     post:
       security:
@@ -360,7 +360,7 @@ paths:
           description: commented
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/post"}
+              schema: { $ref: "#/components/schemas/comments"}
         "404": 
           description: bad request. user or post not found.
         "500": 
@@ -386,7 +386,7 @@ paths:
           description: comment deleted successfully 
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/post"}
+              schema: { $ref: "#/components/schemas/comments"}
         "400": { description: comment not found }
         "404": { description: only authors can delete the comment }
         "500": 

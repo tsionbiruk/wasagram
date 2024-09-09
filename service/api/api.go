@@ -124,9 +124,8 @@ func (rt *_router) Authorize(w http.ResponseWriter, r *http.Request, username st
 		http.Error(w, fmt.Sprintf("User doesnt exist in Tokens table pelease log back in to get a token: %s", err.Error()), http.StatusInternalServerError)
 		return false
 	}
-
 	if token != user_token {
-		http.Error(w, fmt.Sprintf("invalid token: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, "invalid token", http.StatusInternalServerError)
 		return false
 	}
 
@@ -138,11 +137,10 @@ func (rt *_router) Authorize(w http.ResponseWriter, r *http.Request, username st
 	}
 
 	if rt.db.Istokenexpired(tokentime) {
-		http.Error(w, fmt.Sprintf("token expired please log back in to get a token time: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, "Token expired. Please log back in to get a new token.", http.StatusUnauthorized)
 		return false
-	} else {
-		fmt.Println("Token is valid. Proceed with the request.")
 	}
 
 	return true
+
 }

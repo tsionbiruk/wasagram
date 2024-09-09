@@ -80,10 +80,10 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 
 	// Define variables to hold the query result
 	var userProfile UserProfileInfo
-	userProfile.username = username
+	userProfile.Username = username
 
 	// Scan the result into variables
-	err := row.Scan(&userProfile.profilPic)
+	err := row.Scan(&userProfile.ProfilPic)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("no user found with username: %s", username)
@@ -91,21 +91,21 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 		return nil, fmt.Errorf("failed to query user profile: %w", err)
 	}
 
-	err = db.c.QueryRow("SELECT COUNT(*) FROM Followes WHERE target_username=?", username).Scan(&userProfile.follower_count)
+	err = db.c.QueryRow("SELECT COUNT(*) FROM Followes WHERE target_username=?", username).Scan(&userProfile.Follower_count)
 
 	if err != nil {
 		fmt.Println("Error executing query:", err)
 
 	}
 
-	err = db.c.QueryRow("SELECT COUNT(*) FROM Followes WHERE username=?", username).Scan(&userProfile.following_count)
+	err = db.c.QueryRow("SELECT COUNT(*) FROM Followes WHERE username=?", username).Scan(&userProfile.Following_count)
 
 	if err != nil {
 		fmt.Println("Error executing query:", err)
 
 	}
 
-	err = db.c.QueryRow("SELECT COUNT(*) FROM Bans WHERE username=?", username).Scan(&userProfile.banned_count)
+	err = db.c.QueryRow("SELECT COUNT(*) FROM Bans WHERE username=?", username).Scan(&userProfile.Banned_count)
 
 	if err != nil {
 		fmt.Println("Error executing query:", err)
@@ -188,8 +188,8 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 		return nil, fmt.Errorf("error during row iteration: %w", err)
 	}
 
-	userProfile.photo = photos
-	userProfile.photo_count = len(photos)
+	userProfile.Photo = photos
+	userProfile.Photo_count = len(photos)
 
 	return &userProfile, nil
 

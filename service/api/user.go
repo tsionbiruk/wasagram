@@ -19,14 +19,14 @@ func (rt *_router) GetProfile(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	profile, err := rt.db.UserProfile(target_username)
+	UserProfileInfo, err := rt.db.UserProfile(target_username)
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to retrieve profile information: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
-	jsonstr, err := json.Marshal(profile)
+	jsonstr, err := json.Marshal(UserProfileInfo)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to marshal profile data: %s", err.Error()), http.StatusInternalServerError)
 		return
@@ -167,8 +167,10 @@ func (rt *_router) DoLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 
 	jsonstr, err := json.Marshal(token)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to marshal token %s: %s", token, err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to marshal token: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write([]byte(jsonstr))
+
+	// Write the JSON response
+	w.Write(jsonstr)
 }
