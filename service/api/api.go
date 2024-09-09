@@ -39,12 +39,11 @@ package api
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"net/http"
 	"strings"
-
-	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/sirupsen/logrus"
@@ -112,68 +111,38 @@ func (rt *_router) Authorize(w http.ResponseWriter, r *http.Request, username st
 
 	tokenString := strings.TrimPrefix(authHeader, "Bearer ")
 
-	// Validate the token (this example uses JWT)
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %s", token.Header["alg"])
-		}
-		return []byte("your-secret-key"), nil
-	})
+	token, err := strconv.ParseInt(tokenString, 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to parse photo ID: %s", err.Error()), http.StatusInternalServerError)
+		return false
+	}
+	// Validate the token by querying into the db
 
-	if err != nil || !token.Valid {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
+	var user_token int64
+	user_token, err = rt.db.Gettoken(username)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("User doesnt exist in Tokens table pelease log back in to get a token: %s", err.Error()), http.StatusInternalServerError)
 		return false
 	}
 
-	// Optional: Check additional claims or permissions if needed
-	// e.g., check user role, token expiry, etc.
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		// Example: Access username from claims
-		username := claims["username"].(string)
+	if token != user_token {
+		http.Error(w, fmt.Sprintf("invalid token: %s", err.Error()), http.StatusInternalServerError)
+		return false
+	}
 
-		// Attach username to request context or //use as needed
-		fmt.Println("Username:", username)
+	var tokentime time.Time
+	tokentime, err = rt.db.Gettokentime(username, token)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("unable to get token time please log back in to get a token time: %s", err.Error()), http.StatusInternalServerError)
+		return false
+	}
+
+	if rt.db.Istokenexpired(tokentime) {
+		http.Error(w, fmt.Sprintf("token expired please log back in to get a token time: %s", err.Error()), http.StatusInternalServerError)
+		return false
+	} else {
+		fmt.Println("Token is valid. Proceed with the request.")
 	}
 
 	return true
-}
-
-type UserClaims struct {
-	Username string `json:"username"`
-
-	jwt.RegisteredClaims
-}
-
-func (rt *_router) getUserInfoFromRequest(r *http.Request) (*UserClaims, error) {
-	authHeader := r.Header.Get("Authorization")
-	if !strings.HasPrefix(authHeader, "Bearer ") {
-		return nil, fmt.Errorf("authorization header format is bearer token")
-	}
-	tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-
-	// Parse the JWT token
-	token, err := jwt.ParseWithClaims(tokenStr, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
-		// Verify the token signature using a secret or public key
-		return []byte("your-secret-key"), nil
-	})
-
-	if err != nil {
-		return nil, fmt.Errorf("invalid token: %w", err)
-	}
-
-	// Extract user claims
-	if claims, ok := token.Claims.(*UserClaims); ok && token.Valid {
-		return claims, nil
-	} else {
-		return nil, fmt.Errorf("invalid token claims")
-	}
-}
-
-func GenerateToken(username string) (string, error) {
-	claims := jwt.MapClaims{
-		"user_id": username,
-		"exp":     time.Now().Add(time.Hour * 1).Unix(), // Token expires in 1 hour
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte("your-secret-key"))
 }

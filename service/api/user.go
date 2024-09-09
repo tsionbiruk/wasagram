@@ -13,19 +13,13 @@ import (
 func (rt *_router) GetProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
+	target_username := ps.ByName("target_user")
 
-	userClaims, err := rt.getUserInfoFromRequest(r)
-	if err != nil {
-		// Handle error (e.g., invalid or missing token)
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+	if token := rt.Authorize(w, r, username); !token {
 		return
 	}
 
-	if token := rt.Authorize(w, r, userClaims.Username); !token {
-		return
-	}
-
-	profile, err := rt.db.UserProfile(username)
+	profile, err := rt.db.UserProfile(target_username)
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to retrieve profile information: %s", err.Error()), http.StatusInternalServerError)
@@ -43,19 +37,13 @@ func (rt *_router) GetProfile(w http.ResponseWriter, r *http.Request, ps httprou
 func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
+	target_username := ps.ByName("target_user")
 
-	userClaims, err := rt.getUserInfoFromRequest(r)
-	if err != nil {
-		// Handle error (e.g., invalid or missing token)
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+	if token := rt.Authorize(w, r, username); !token {
 		return
 	}
 
-	if token := rt.Authorize(w, r, userClaims.Username); !token {
-		return
-	}
-
-	photos, stream, err := rt.db.GetStream(username)
+	photos, stream, err := rt.db.GetStream(target_username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to retrieve stream: %s", err.Error()), http.StatusInternalServerError)
 		return
@@ -82,14 +70,7 @@ func (rt *_router) Rename(w http.ResponseWriter, r *http.Request, ps httprouter.
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 
-	userClaims, err := rt.getUserInfoFromRequest(r)
-	if err != nil {
-		// Handle error (e.g., invalid or missing token)
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
-
-	if token := rt.Authorize(w, r, userClaims.Username); !token {
+	if token := rt.Authorize(w, r, username); !token {
 		return
 	}
 
@@ -118,6 +99,22 @@ func (rt *_router) Rename(w http.ResponseWriter, r *http.Request, ps httprouter.
 		return
 
 	}
+
+	// Create the success response
+	response := map[string]string{
+		"message": "Username updated successfully",
+	}
+
+	// Encode the response to JSON
+	responseData, err := json.Marshal(response)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to marshal response: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	// Write the response
+	w.WriteHeader(http.StatusOK)
+	w.Write(responseData)
 
 }
 
@@ -159,16 +156,18 @@ func (rt *_router) DoLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 		return
 	}
 
-	err = rt.db.CreateNewUser(username)
+	var token int
+	token, err = rt.db.Creatuser_Getuserfromtoken(username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to either retrieve or create user: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	//GENERATE TOKENS HERE
-	//MARSHAL TH ETOKEN NOT THE USERNAME
-	jsonstr, err := json.Marshal(username)
+
+	//MARSHAL THETOKEN NOT THE USERNAME
+
+	jsonstr, err := json.Marshal(token)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to marshal Username %s: %s", username, err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to marshal token %s: %s", token, err.Error()), http.StatusInternalServerError)
 		return
 	}
 	_, _ = w.Write([]byte(jsonstr))

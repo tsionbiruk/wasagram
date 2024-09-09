@@ -42,7 +42,7 @@ type AppDatabase interface {
 	GetName() (string, error)
 	SetName(name string) error
 
-	CreateNewUser(username string) error
+	Creatuser_Getuserfromtoken(username string) (int, error)
 	UpdateUserName(username string, newusername string) error
 
 	FollowUser(username string, target_username string) (string, error)
@@ -71,11 +71,17 @@ type AppDatabase interface {
 	Comment(username string, PhotoId int64, text string) error
 	Uncomment(CommentId int64) error
 	Getcomment(PhotoId int64) ([]string, error)
+
+	Gettoken(username string) (int64, error)
+	Gettokentime(username string, token int64) (time.Time, error)
+	Istokenexpired(tokenTime time.Time) bool
+
 	Ping() error
 }
 
 type wasabase struct {
-	c *sql.DB
+	c        *sql.DB
+	tokenGen *TokenGenerator
 }
 
 type UserProfileInfo struct {
@@ -226,6 +232,25 @@ func New(db *sql.DB) (AppDatabase, error) {
 			
 		);`
 		_, err = db.Exec(PostsTable)
+		if err != nil {
+			return nil, fmt.Errorf("error creating database structure: %w", err)
+		}
+	}
+
+	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='Tokens';`).Scan(&tableName)
+	if errors.Is(err, sql.ErrNoRows) {
+		TokenTable := `CREATE TABLE Tokens (
+			
+			username STRING,
+			Token INTEGER,
+			time TIME, 
+
+			PRIMARY KEY(Token),
+			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE
+			
+			
+		);`
+		_, err = db.Exec(TokenTable)
 		if err != nil {
 			return nil, fmt.Errorf("error creating database structure: %w", err)
 		}

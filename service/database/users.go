@@ -1,25 +1,6 @@
 package database
 
-import (
-	"database/sql"
-	"errors"
-	"fmt"
-)
-
-// all user related functions: createnewuser, updateusername,
-//getallusers,
-
-func (db *wasabase) CreateNewUser(username string) error {
-	var Profil_pic []byte
-	err := db.c.QueryRow("SELECT * FROM Users WHERE username=?", username).Scan()
-	if errors.Is(err, sql.ErrNoRows) {
-		_, err = db.c.Exec("INSERT INTO Users VALUES (?,?)", username, Profil_pic)
-		if err != nil {
-			return fmt.Errorf("failed to insert '%s' into the Users table: %w", username, err)
-		}
-	}
-	return nil
-}
+//usercreation is in the tokens file.
 
 func (db *wasabase) UpdateUserName(username string, newusername string) error {
 	_, err := db.c.Exec("UPDATE Users SET username=? WHERE username=?", newusername, username)

@@ -192,8 +192,8 @@ paths:
                 properties:
                   identifier:
                     
-                    type: string
-                    example: "abcdef012345"
+                    type: integer
+                    example: 784
         '400': 
           description: Bad Request. Username doesnt fit the description.
         
@@ -220,9 +220,7 @@ paths:
       responses: 
         "201":
           description: Username Updated successfully
-          content: 
-            application/json: 
-               schema: { $ref: "#/components/schemas/user"}
+          
         "400":
 
           description: Bad request. username doesn't exist
@@ -395,7 +393,7 @@ paths:
             description: Internal Server Error - could be error of authentication 
   
   #follow a user
-  /user/{Userid}/follow/{Userid_1}: 
+  /user/{username}/follow/target_user/{target_username}: 
     
     put:
       security:
@@ -420,7 +418,7 @@ paths:
           
     
   #get user followers
-  /user/{Userid}/followers: 
+  /user/{username}/followers/target_user/{target_username}: 
     
     get:
       security:
@@ -450,7 +448,7 @@ paths:
   
   
   #get user following  
-  /user/{Userid}/following: 
+  /user/{username}/following/target_user/{target_username}:
     
     get:
       security:
@@ -477,7 +475,7 @@ paths:
           description: user not found
    
   #remove a user from following
-  /user/{Userid}/unfollow/{Userid_1}: 
+  /user/{username}/unfollow/target_user/{target_username}: 
     
     delete:
       security:
@@ -499,7 +497,7 @@ paths:
             description: Internal Server Error - could be error of authentication 
   
   #remove a user from followers
-  /user/{Userid}/followers/{Userid_1}:
+ /user/{username}/followers/target_user/{target_username}:
     
     delete:
       security:
@@ -521,7 +519,7 @@ paths:
             description: Internal Server Error - could be error of authentication 
   
  #ban a user
-  /user/{Userid}/ban/{Userid_1}:
+  /user/{username}/ban/target_user/{target_username}:
     
     put:
       security:
@@ -564,7 +562,7 @@ paths:
                   items: { $ref: "#/components/schemas/user" }
   
 #unbanuser
-  /user/{Userid}/unban/{Userid_1}: 
+  /user/{username}/unban/target_user/{target_username}: 
     
     delete:
       security:
@@ -583,7 +581,7 @@ paths:
             description: Internal Server Error - could be error of authentication 
   
 #get user profil
-  /user/{Userid}/profile:
+  /user/{username}/target_user/{target_username}/profile:
     get:
       security:
       - BearerAuth: []
@@ -608,7 +606,7 @@ paths:
             description: Internal Server Error - could be error of authentication 
   
 #getstream
-  /user/{Userid}/stream:
+  /user/{username}/target_user/{target_username}/stream:
     get:
       security:
       - BearerAuth: []

@@ -15,14 +15,7 @@ func (rt *_router) PostComments(w http.ResponseWriter, r *http.Request, ps httpr
 	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")
 
-	userClaims, err := rt.getUserInfoFromRequest(r)
-	if err != nil {
-		// Handle error (e.g., invalid or missing token)
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return nil, nil
-	}
-
-	if token := rt.Authorize(w, r, userClaims.Username); !token {
+	if token := rt.Authorize(w, r, username); !token {
 		return nil, nil
 	}
 
@@ -58,14 +51,7 @@ func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps htt
 	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")
 
-	userClaims, err := rt.getUserInfoFromRequest(r)
-	if err != nil {
-		// Handle error (e.g., invalid or missing token)
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return nil, nil
-	}
-
-	if token := rt.Authorize(w, r, userClaims.Subject); !token {
+	if token := rt.Authorize(w, r, username); !token {
 		return nil, nil
 	}
 
@@ -81,7 +67,7 @@ func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps htt
 		return nil, nil
 	}
 
-	if username == userClaims.Username {
+	if username == target_username {
 		err = rt.db.Uncomment(CommentId)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to delete comment: %s", err.Error()), http.StatusInternalServerError)
