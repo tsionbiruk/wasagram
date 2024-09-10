@@ -3,8 +3,7 @@ info:
   title: WasaPhoto
   description: API documentation for the WasaPhoto project.
   version: 1.0.0
-servers:
-  - url: https://api.sample.com/v1
+
 
 components:
   securitySchemes:
@@ -19,7 +18,7 @@ components:
       description: object that uses this app
       type: object
       properties: 
-        user_id:
+        username:
           description: unique identifier for the user. The user name
           type: string
           example: "maria"
@@ -36,29 +35,73 @@ components:
       description: object that user displays on profil
       type : object
       properties: 
-        user_id:
+        username:
+          type: string
+        
+        PhotoId:
           type: integer
-        
-        picture:
-          type: string
-          format: binary
-          #think about the encoding in the backend 
-          description: The image file to upload
-                  
-        caption: 
-           type: string
-           description: Additional text associated with the picture
-        
-        date-time: 
-          type: string
-          format: date-time
-          example: "2024-08-07T14:20:00Z"
           
-        like: 
-          type: integer
+          description: The unique identifier of the image 
+                  
         
+             
+    like: 
+      title: like
+      description: object contaianing a count and list of users that liked the image
+      type: object 
+      properties: 
+      
+        username: 
+          type: string
+          description: name of the user that liked the post
+          example: "abel"
+        
+        likes: 
+          type: string
+          description: usernamw that liked the post 
+          example: "sarah"
+        
+        like_count: 
+          type: integer
+          description: total number of likes a picture has
+          example: 8
+        
+        PhotoId: 
+          type: integer
+          description: id of the photo the user liked
+          example: 6
+    
+    comment: 
+      title: comment
+      description: text users leave on a post
+      type: object
+      properties: 
+        
+        username: 
+          type: string
+          description: name of the user that commented on the post
+          example: "abel"
+          
         comment: 
           type: string
+          description: text left by a useron a post
+          example: "slay"
+        
+        comment_count: 
+          type: integer
+          description: number of comments left on a post 
+          example: 5
+        
+        PhotoId: 
+          type: integer
+          description: id of the photo the user commented on
+          example: 6
+          
+        date-time: 
+          type: string
+          description: upload time of the comment
+          format: date-time
+          example: "2024-08-07T14:20:00Z"
     
     photo: 
       title: Photo
@@ -66,6 +109,10 @@ components:
       type : object
       properties: 
         
+        username: 
+          type: string
+          description: name of the user that made the post
+          example: "abel"
         
         picture:
           type: string
@@ -76,14 +123,33 @@ components:
         caption: 
            type: string
            description: Additional text associated with the picture
+        
+        
+        date-time: 
+          type: string
+          description: upload time of the post
+          format: date-time
+          example: "2024-08-07T14:20:00Z"
+          
+        like: 
+          type: array
+          items: 
+            
+             $ref: '#/components/schemas/like'
+          
+        comment: 
+          type: array
+          items: 
+             $ref: '#/components/schemas/comment'
     
     profil: 
       title: "profil"
       description: object that displays content and info from the user such as the user’s photos, number of photo, followers and following
       type: object
+      
       properties:
-        user_id:
-          type: integer
+        username:
+          type: string
           #each profil is linked with a user
         profile_pic:
           type: string
@@ -110,22 +176,32 @@ components:
 
     
   parameters:
-    Userid:
+    username:
       schema:
-        type: integer
-        example: 4
-        readOnly: true 
-      name: Userid
+        type: string
+        example: "mimi"
+       
+      name: username
       in : path
       required: true
-      description: userid
+      description: name of the user
     
-    Postid: 
+    target_username:
+      schema:
+        type: string
+        example: "mimi"
+       
+      name: target_username
+      in : path
+      required: true
+      description: name of the target user
+      
+    PhotoId: 
       schema:
         type: integer
         example: 5
         readOnly: true 
-      name: Postid
+      name: PhotoId
       in : path
       required: true
       description: Id of the photo
@@ -140,16 +216,7 @@ components:
       required: true
       description: Id of the comment
     
-    Userid_1:
-      schema:
-        type: integer
-        example: 8
-        readOnly: true 
-      name: Userid_1
-      in : path
-      required: true
-      description: a subuser id 
-      
+   
 security:
   - BearerAuth: []
 
@@ -199,9 +266,9 @@ paths:
         
   
   #updating username  
-  /user/{Userid}:
+  /user/{username}:
     
-    post:
+    put:
       security:
       - BearerAuth: []
       
@@ -209,7 +276,7 @@ paths:
       description: change the unique identifier of a pre-existing user.
       
       parameters:
-      - $ref: "#/components/parameters/Userid"
+      - $ref: "#/components/parameters/username"
       
       requestBody:
         content:
@@ -217,15 +284,15 @@ paths:
             schema: { $ref: "#/components/schemas/user"}
       
 
-      responses: 
-        "201":
-          description: Username Updated successfully
-          
+      responses:
+        "200":
+          description: Username updated successfully.
+      
         "400":
+          description: Bad request. Username doesn't exist or validation failed.
 
-          description: Bad request. username doesn't exist
-        "500": 
-            description: Internal Server Error - could be error of authentication 
+        "500":
+          description: Internal Server Error. Could be an error in authentication or processing.
   
   #upload a photo
   /user/{username}/photo/:
@@ -239,29 +306,39 @@ paths:
       description: upload a photo linked to the id of the user.
       
       parameters:
-      - $ref: "#/components/parameters/Userid"
+      - $ref: "#/components/parameters/username"
       
-      requestBody: 
-        content: 
-          application/json: 
-            schema: { $ref: "#/components/schemas/photo"}
-      responses: 
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                  description: The photo file to upload.
+                  
+      responses:
         "201":
-          description: post created succesfully
+          description: Photo uploaded successfully.
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/post"}
+              schema: 
+                $ref: "#/components/schemas/post"  # If a post object is returned, ensure this reflects the actual response
         
         "400":
-          description: Bad Request. username doesnt exist. 
-          
-        "404": 
-          description: wrong photo format
-        "500": 
-            description: Internal Server Error - could be error of authentication 
+          description: Bad Request. Username doesn't exist or invalid request.
+  
+        "404":
+          description: Invalid photo format or photo not found.
+  
+        "500":
+          description: Internal Server Error - Could be an error of authentication or server issue.
     
   #delete post
-  /user/{username}/photo/{Postid}:
+  /user/{username}/photo/{PhotoId}:
     delete:
       security:
       - BearerAuth: []  
@@ -271,17 +348,21 @@ paths:
       description: delete a post linked to the id of the user.
       
       parameters:
-      - $ref: "#/components/parameters/Postid" 
-      - $ref: "#/components/parameters/Userid"
+      - $ref: "#/components/parameters/PhotoId" 
+      - $ref: "#/components/parameters/username"
       
       responses:
-        "204": { description: photo deleted successfully }
-        "404": { description: photo or username not found }
-        "500": 
-            description: Internal Server Error - could be error of authentication 
+        "204":
+          description: Photo deleted successfully.
+          
+        "404":
+          description: Photo or username not found.
+        
+        "500":
+          description: Internal Server Error - could be due to authentication issues or other server errors.
   
   #liking/unliking a photo
-  /user/{username}/target_user/{target_username}/photo/{Postid}/like:
+  /user/{username}/target_user/{target_username}/photo/{PhotoId}/like:
     
     put:
       security:
@@ -292,21 +373,30 @@ paths:
       description: increase the like counter by one under the post linked to the users id.
       
       parameters:
-        - $ref: "#/components/parameters/Postid" 
-        - $ref: "#/components/parameters/Userid"
+        - $ref: "#/components/parameters/PhotoId" 
+        - $ref: "#/components/parameters/username"
+        - $ref: "#/components/parameters/target_username"
         
       responses:
         "200":
-          description: picture liked. updated count
+          description: Photo liked. Like count updated.
           content:
             application/json:
               schema:
-               
-                type: []string
-                example: ("jessica", "abel")
-        "404": { description: picture not found }
-        "500": 
-            description: Internal Server Error - could be error of authentication 
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Photo liked successfully."
+                  likes:
+                    type: integer
+                    example: 101  # Example updated like count
+  
+        "404":
+          description: Photo not found or invalid username.
+        
+        "500":
+          description: Internal Server Error - could be due to authentication or processing issues.
         
     delete:
       
@@ -315,25 +405,36 @@ paths:
       summary: remove a like to a users post
       description: decrease the like counter by one under the post linked to the users id.
       parameters:
-        - $ref: "#/components/parameters/Postid" 
-        - $ref: "#/components/parameters/Userid"
+        - $ref: "#/components/parameters/PhotoId" 
+        - $ref: "#/components/parameters/username"
+        - $ref: "#/components/parameters/target_username"
         
       responses:
-        "204": 
-          description: picture unliked. updated count
+        "204":
+          description: Photo unliked. Like count updated.
           content:
             application/json:
-               schema:
-               
-                type: []strings
-                example: ("jessica", "abel")
-        "400": { description: picture or username not found }
-        "404": { description: picture wasnt previously liked }
-        "500": 
-            description: Internal Server Error - could be error of authentication 
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Photo unliked successfully."
+                  likes:
+                    type: integer
+                    example: 100  # Example updated like count
+
+        "400":
+          description: Photo or username not found.
+        
+        "404":
+          description: Photo wasn't previously liked.
+        
+        "500":
+          description: Internal Server Error - could be due to authentication or processing issues.
   
   #commenting on a photo
-  /user/{username}/photo/{Postid}/comment:
+  /user/{username}/photo/{PhotoId}/comment:
     
     post:
       security:
@@ -343,8 +444,8 @@ paths:
       summary: add a comment to a users post
       
       parameters:
-          - $ref: "#/components/parameters/Postid" 
-          - $ref: "#/components/parameters/Userid"
+        - $ref: "#/components/parameters/PhotoId" 
+        - $ref: "#/components/parameters/username"
           
       requestBody: 
         content: 
@@ -360,14 +461,14 @@ paths:
           description: commented
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/comments"}
+              schema: { $ref: "#/components/schemas/comment"}
         "404": 
           description: bad request. user or post not found.
         "500": 
             description: Internal Server Error - could be error of authentication 
    
   #uncommenting    
-  /user/{Userid}/photo/{Postid}/comment/{Commentid}:
+  /user/{username}/photo/{PhotoId}/comment/{Commentid}:
     
     delete:
       security:
@@ -377,25 +478,27 @@ paths:
       summary: remove a comment from a users post
       
       parameters:
-          - $ref: "#/components/parameters/Postid" 
-          - $ref: "#/components/parameters/Userid"
+          - $ref: "#/components/parameters/PhotoId" 
+          - $ref: "#/components/parameters/username"
           - $ref: "#/components/parameters/Commentid"
           
       responses:
-        "204":  
+        "200":  
           description: comment deleted successfully 
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/comments"}
-        "400": { description: comment not found }
-        "404": { description: only authors can delete the comment }
+              schema: { $ref: "#/components/schemas/comment"}
+        "403":  
+          description: Unauthorized - Only the author can delete the comment. 
+        "404":  
+          description: Comment or post not found.
         "500": 
             description: Internal Server Error - could be error of authentication 
   
   #follow a user
   /user/{username}/follow/target_user/{target_username}: 
     
-    put:
+    post:
       security:
       - BearerAuth: [] 
       
@@ -404,15 +507,18 @@ paths:
       description: add this user to the list of users our user follows
       
       parameters:
-         - $ref: "#/components/parameters/Userid_1"
-         - $ref: "#/components/parameters/Userid"
+         - $ref: "#/components/parameters/target_username"
+         - $ref: "#/components/parameters/username"
          
       responses: 
         "200": 
-          description: user followed 
+          description: user followed successfully
+        "409":
+          description: user is already followed
+
         
         "400": 
-          description: user doesnt exist
+          description: Cannot follow yourself
         "500": 
             description: Internal Server Error - could be error of authentication 
           
@@ -430,7 +536,8 @@ paths:
       
       parameters:
            
-          - $ref: "#/components/parameters/Userid"
+          - $ref: "#/components/parameters/username"
+          - $ref: "#/components/parameters/target_username"
           
       responses: 
         "200": 
@@ -440,7 +547,9 @@ paths:
               schema: 
                 type: array
                 items: { $ref: "#/components/schemas/user" }
-        
+        "401": 
+          description: Unauthorized - Authentication failed or token expired
+
         "500": 
             description: Internal Server Error - could be error of authentication 
         "404": 
@@ -460,7 +569,8 @@ paths:
       
       parameters:
            
-          - $ref: "#/components/parameters/Userid"
+        - $ref: "#/components/parameters/username"
+        - $ref: "#/components/parameters/target_username"
       responses: 
         "200": 
           description: list of following
@@ -469,6 +579,8 @@ paths:
               schema: 
                 type: array
                 items: { $ref: "#/components/schemas/user" }  
+        "401": 
+          description: Unauthorized - Authentication failed or token expired
         "500": 
             description: Internal Server Error - could be error of authentication 
         "404": 
@@ -486,18 +598,24 @@ paths:
       description: Remove a user from the following list.
       
       parameters:
-         - $ref: "#/components/parameters/Userid_1"
-         - $ref: "#/components/parameters/Userid"
+         - $ref: "#/components/parameters/target_username"
+         - $ref: "#/components/parameters/username"
          
       responses:
       
-        "200": { description: unfollowed }
+        "200":  
+          description: unfollowed 
+        "400":
+         description: Bad request - The target user does not exist or invalid input
+
+        "401":
+         description: Unauthorized - Authentication failed or token expired
         
         "500": 
             description: Internal Server Error - could be error of authentication 
   
   #remove a user from followers
- /user/{username}/followers/target_user/{target_username}:
+  /user/{username}/follower/target_user/{target_username}:
     
     delete:
       security:
@@ -507,14 +625,18 @@ paths:
       summary: remove user from followers 
       parameters:
            
-          - $ref: "#/components/parameters/Userid_1"
-          - $ref: "#/components/parameters/Userid"
+         - $ref: "#/components/parameters/target_username"
+         - $ref: "#/components/parameters/username"
       
       responses: 
         "200": 
           description: user removed
-        "404": 
-          description: user not found
+        "400":
+          description: Bad request - The target user does not exist or invalid input
+
+        "401":
+          description: Unauthorized - Authentication failed or token expired
+        
         "500": 
             description: Internal Server Error - could be error of authentication 
   
@@ -528,8 +650,8 @@ paths:
       summary: Ban a user
       description: Add this user to the list of banned users for the current user
       parameters:
-        - $ref: "#/components/parameters/Userid_1"
-        - $ref: "#/components/parameters/Userid"
+         - $ref: "#/components/parameters/target_username"
+         - $ref: "#/components/parameters/username"
       responses:
         "200":
           description: User banned successfully
@@ -537,21 +659,21 @@ paths:
             removeFollower:
               operationId: removeUser
               parameters:
-                Userid_1: $request.path.Userid_1
+                Userid_1: $request.path.target_username
         "400":
-          description: User not found
-        "404":
-          description: Bad request. You cannot ban yourself
+          description: Bad request - Invalid input or target user not found
+        "403":
+          description: Forbidden - You cannot ban yourself
         "500":
-          description: Internal Server Error - could be an error of authentication
+          description: Internal Server Error - Could be an issue with authentication or server
 
     get: 
       operationId: "getbannedusers"
       
       description: retrive a list of banned users
       parameters:
-        - $ref: "#/components/parameters/Userid_1"
-        - $ref: "#/components/parameters/Userid"
+        - $ref: "#/components/parameters/target_username"
+        - $ref: "#/components/parameters/username"
       responses: 
           "200": 
             description: list retrived
@@ -569,16 +691,28 @@ paths:
       - BearerAuth: []
       
       operationId: unbanuser
-      
+      summary: Unban a user
       description: Remove a user from the banned list.
+      
+      
       parameters:
-         - $ref: "#/components/parameters/Userid_1"
-         - $ref: "#/components/parameters/Userid"
+         - $ref: "#/components/parameters/target_username"
+         - $ref: "#/components/parameters/username"
       responses:
-        "204": { description: unfbanned }
-        "404": { description: user not found }
-        "500": 
-            description: Internal Server Error - could be error of authentication 
+        "204":
+          description: User successfully unbanned
+    
+        "400":
+          description: Bad request - Invalid input or malformed request
+    
+        "401":
+          description: Unauthorized - Authentication failed or token expired
+    
+        "404":
+          description: User or target user not found
+    
+        "500":
+          description: Internal Server Error - Could be an issue with authentication or server 
   
 #get user profil
   /user/{username}/target_user/{target_username}/profile:
@@ -587,12 +721,13 @@ paths:
       - BearerAuth: []
       
       operationId: getuserprofil
-      
+      summary: Retrieve user profile
       description: retriev a users profile contaning all the info. 
       
       parameters:
          
-         - $ref: "#/components/parameters/Userid" 
+        - $ref: "#/components/parameters/target_username"
+        - $ref: "#/components/parameters/username"
       responses: 
         "200": 
           description: profil retrived
@@ -600,10 +735,17 @@ paths:
             application/json: 
               schema: { $ref: "#/components/schemas/profil" }
         
-        "404": 
-          description: userid not found. 
-        "500": 
-            description: Internal Server Error - could be error of authentication 
+        "400":
+          description: Bad request - Invalid input or malformed request
+      
+        "401":
+          description: Unauthorized - Authentication failed or token expired
+    
+        "404":
+          description: User or target user not found
+    
+        "500":
+          description: Internal Server Error - Could be an issue with authentication or server 
   
 #getstream
   /user/{username}/target_user/{target_username}/stream:
@@ -612,53 +754,29 @@ paths:
       - BearerAuth: []
       
       operationId: getmystream
-      
+      summary: Retrieve user stream
       description: retriev a users' profile contaning all the info. 
       
       parameters:
          
-         - $ref: "#/components/parameters/Userid"
+         - $ref: "#/components/parameters/target_username"
+         - $ref: "#/components/parameters/username"
       responses: 
         "200": 
-          description: profil retrived
+          description: photos retrived
           content: 
             application/json: 
-              schema: { $ref: "#/components/schemas/profil" }
+              schema: { $ref: "#/components/schemas/photo" }
         
-        "404": 
-          description: userid in user and userid in profil dont match. 
-        "500": 
-            description: Internal Server Error - could be error of authentication            
+        "400":
+           description: Bad request - Invalid input or malformed request
+      
+        "401":
+          description: Unauthorized - Authentication failed or token expired
+    
+        "404":
+          description: User or target user not found or mismatched
+    
+        "500":
+          description: Internal Server Error - Could be an issue with authentication or server            
   
-  
-      
-          
-      
-    
-  
-      
-      
-      
-    
-    
-    
-        
-  
-    
-      
-      
-
-    
-      
-          
-      
-    
-      
-              
-      
-      
-  
-  
-    
-  
-
