@@ -7,7 +7,19 @@ import (
 )
 
 func (db *wasabase) Getbannedusers(username string) ([]string, error) {
+
+	var exists bool
+	err := db.c.QueryRow("SELECT 1 FROM Users WHERE username=?", username).Scan(&exists)
+	if !exists {
+
+		return nil, fmt.Errorf("user %s doesnt exist", username)
+	} else if err != nil {
+
+		return nil, fmt.Errorf("error getting banned: %w", err)
+	}
+
 	banned := []string{}
+
 	rows, err := db.c.Query("SELECT target_username FROM Bans WHERE username =?", username)
 	if err != nil {
 		return nil, err
@@ -29,8 +41,19 @@ func (db *wasabase) Getbannedusers(username string) ([]string, error) {
 }
 
 func (db *wasabase) Getfollowers(username string) ([]string, error) {
+
+	var exists bool
+	err := db.c.QueryRow("SELECT 1 FROM Users WHERE username=?", username).Scan(&exists)
+	if !exists {
+
+		return nil, fmt.Errorf("user %s doesnt exist", username)
+	} else if err != nil {
+
+		return nil, fmt.Errorf("error getting follower: %w", err)
+	}
+
 	followers := []string{}
-	rows, err := db.c.Query("SELECT target_username FROM Followes WHERE username = ?", username)
+	rows, err := db.c.Query("SELECT username FROM Followes WHERE target_username = ?", username)
 	if err != nil {
 		return nil, err
 	}
@@ -52,8 +75,18 @@ func (db *wasabase) Getfollowers(username string) ([]string, error) {
 }
 
 func (db *wasabase) Getfollowing(username string) ([]string, error) {
+
+	var exists bool
+	err := db.c.QueryRow("SELECT 1 FROM Users WHERE username=?", username).Scan(&exists)
+	if !exists {
+
+		return nil, fmt.Errorf("user %s doesnt exist", username)
+	} else if err != nil {
+
+		return nil, fmt.Errorf("error getting following: %w", err)
+	}
 	following := []string{}
-	rows, err := db.c.Query("SELECT username FROM Followes WHERE target_username = ?", username)
+	rows, err := db.c.Query("SELECT target_username FROM Followes WHERE username = ?", username)
 	if err != nil {
 		return nil, err
 	}
@@ -74,16 +107,12 @@ func (db *wasabase) Getfollowing(username string) ([]string, error) {
 }
 
 func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
-	// get profil_pic
-
-	row := db.c.QueryRow("SELECT profil_pic FROM Users WHERE username = ?", username)
-
-	// Define variables to hold the query result
 	var userProfile UserProfileInfo
 	userProfile.Username = username
 
-	// Scan the result into variables
-	err := row.Scan(&userProfile.ProfilPic)
+	// Query the profile picture
+	err := db.c.QueryRow("SELECT profil_pic FROM Users WHERE username = ?", username).Scan(&userProfile.ProfilPic)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("no user found with username: %s", username)
@@ -134,11 +163,12 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 		}
 
 		comments := []CommentData{}
-		commentRows, err := db.c.Query("SELECT body, upload_time FROM Comments WHERE photoId: %s", p.photoId)
+		commentRows, err := db.c.Query("SELECT body, upload_time FROM Comments WHERE photoId=?", p.photoId)
 		if err != nil {
 			return nil, err
 		}
 		defer commentRows.Close()
+
 		for commentRows.Next() {
 
 			var comment CommentData
@@ -153,34 +183,42 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 		}
 		p.Comments = comments
 
+		fmt.Print(comments)
+		fmt.Print(p.comment_count)
+
+		likes := []string{}
+
 		err = db.c.QueryRow("SELECT COUNT(*) FROM Likes WHERE PhotoId=?", p.photoId).Scan(&p.like_count)
 
 		if err != nil {
 			fmt.Println("Error executing query:", err)
 		}
-
-		likes := []string{}
 		likeRows, err := db.c.Query("SELECT username FROM Likes WHERE photoId = ?", p.photoId)
 		if err != nil {
 			return nil, err
 		}
 
 		defer likeRows.Close()
+
 		for likeRows.Next() {
 			var user string
-			err := rows.Scan(&user)
+			err := likeRows.Scan(&user)
 			if err != nil {
 				return nil, err
 			}
 			likes = append(likes, user)
 
 		}
+
 		if err = rows.Err(); err != nil {
 			return nil, err
 		}
 		p.likes = likes
+		fmt.Print(likes)
+		fmt.Print(p.like_count)
 
 		photos = append(photos, p)
+		fmt.Print(photos)
 
 	}
 

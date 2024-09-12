@@ -14,7 +14,7 @@ import (
 func (rt *_router) PostComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	photo_id_str := ps.ByName("PhotoId")
+	photo_id_str := ps.ByName("photoid")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -66,7 +66,7 @@ func (rt *_router) PostComments(w http.ResponseWriter, r *http.Request, ps httpr
 func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	photo_id_str := ps.ByName("PhotoId")
+	photo_id_str := ps.ByName("photoid")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -77,14 +77,14 @@ func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps htt
 		http.Error(w, fmt.Sprintf("Failed to parse photo ID: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	comment_id_str := ps.ByName("CommentId")
+	comment_id_str := ps.ByName("commentid")
 	CommentId, err := strconv.ParseInt(comment_id_str, 10, 64)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to parse comment ID: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 	var target_username string
-	target_username, err = rt.db.GetAuthorId(PhotoId)
+	target_username, err = rt.db.GetAuthorcommenter(PhotoId)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to post comment: %s", err.Error()), http.StatusInternalServerError)
 		return

@@ -84,7 +84,7 @@ func (rt *_router) UploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 func (rt *_router) Photolike(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+	//target_username := ps.ByName("target_user")
 	photo_id_str := ps.ByName("photoid")
 
 	if token := rt.Authorize(w, r, username); !token {
@@ -97,7 +97,7 @@ func (rt *_router) Photolike(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	err = rt.db.Photolike(target_username, PhotoId)
+	err = rt.db.Photolike(username, PhotoId)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to like the photo: %s", err.Error()), http.StatusInternalServerError)
 		return
@@ -123,7 +123,7 @@ func (rt *_router) Photolike(w http.ResponseWriter, r *http.Request, ps httprout
 func (rt *_router) Photounlike(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+
 	photo_id_str := ps.ByName("photoid")
 
 	if token := rt.Authorize(w, r, username); !token {
@@ -137,14 +137,14 @@ func (rt *_router) Photounlike(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	var og_liker string
-	og_liker, err = rt.db.GetAuthorId(PhotoId)
+	og_liker, err = rt.db.GetAuthorliker(PhotoId)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to post comment: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
-	if target_username == og_liker {
-		err = rt.db.Photounlike(target_username, PhotoId)
+	if username == og_liker {
+		err = rt.db.Photounlike(username, PhotoId)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to unlike the photo, cant unlike what you didn't like: %s", err.Error()), http.StatusInternalServerError)
 			return

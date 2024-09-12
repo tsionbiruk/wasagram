@@ -11,13 +11,13 @@ import (
 func (db *wasabase) BanUsers(username string, target_username string) (string, error) {
 	if username != target_username {
 		var exists bool
-		err := db.c.QueryRow("SELECT username FROM Users WHERE username=? ", target_username).Scan(&exists)
-		if err == nil {
+		err := db.c.QueryRow("SELECT 1 FROM Users WHERE username=?", target_username).Scan(&exists)
+		if !exists {
 
-			return "", fmt.Errorf("%s doesnt exist", target_username)
-		} else if err != sql.ErrNoRows {
+			return "", fmt.Errorf("user %s doesnt exist", target_username)
+		} else if err != nil {
 
-			return "", fmt.Errorf("failed to check ban status: %w", err)
+			return "", fmt.Errorf("error banning follower: %w", err)
 		}
 
 		_, err = db.c.Exec("INSERT INTO Bans (username, target_username) VALUES (?, ?)", username, target_username)

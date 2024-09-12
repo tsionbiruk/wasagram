@@ -12,11 +12,13 @@ import (
 func (rt *_router) Followuser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+	target_username := ps.ByName("targetuser")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
 	}
+
+	fmt.Print(target_username)
 
 	_, err := rt.db.FollowUser(username, target_username)
 	if err != nil {
@@ -44,7 +46,7 @@ func (rt *_router) Unfollowuser(w http.ResponseWriter, r *http.Request, ps httpr
 	w.Header().Set("Content-Type", "application/json")
 
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+	target_username := ps.ByName("targetuser")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -76,7 +78,7 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	w.Header().Set("Content-Type", "application/json")
 
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+	target_username := ps.ByName("targetuser")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -87,7 +89,27 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to ban target: %s", err.Error()), http.StatusInternalServerError)
 		return
+
 	}
+
+	if username == target_username {
+		response := map[string]string{
+			"message": "Cannot ban yourself",
+		}
+
+		// Encode the response to JSON
+		responseData, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to marshal response: %s", err.Error()), http.StatusInternalServerError)
+			return
+		}
+
+		// Write the response
+		w.WriteHeader(http.StatusBadRequest) // 400 status code for invalid request
+		w.Write(responseData)
+		return
+	}
+
 	response := map[string]string{
 		"message": "User banned succesfully",
 	}
@@ -107,7 +129,7 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+	target_username := ps.ByName("targetuser")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -139,7 +161,7 @@ func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+	target_username := ps.ByName("targetuser")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -162,7 +184,7 @@ func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 func (rt *_router) Getfollowing(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+	target_username := ps.ByName("targetuser")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -185,15 +207,16 @@ func (rt *_router) Getfollowing(w http.ResponseWriter, r *http.Request, ps httpr
 func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+	target_username := ps.ByName("targetuser")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
 	}
 
+	fmt.Print(target_username)
 	banned, err := rt.db.Getbannedusers(target_username)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to get followers: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to get banned users: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 

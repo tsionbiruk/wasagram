@@ -25,6 +25,36 @@ func (db *wasabase) GetAuthorId(PhotoId int64) (string, error) {
 	return author_name, nil
 }
 
+func (db *wasabase) GetAuthorliker(PhotoId int64) (string, error) {
+	var author_name string
+	err := db.c.QueryRow("SELECT username FROM Likes WHERE PhotoId=?", PhotoId).Scan(&author_name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Handle case where no row was found
+			return "", fmt.Errorf("no author found for PhotoId %d", PhotoId)
+		}
+		// For other errors, return them
+		return "", fmt.Errorf("error executing query: %v", err)
+	}
+
+	return author_name, nil
+}
+
+func (db *wasabase) GetAuthorcommenter(PhotoId int64) (string, error) {
+	var author_name string
+	err := db.c.QueryRow("SELECT username FROM Comments WHERE PhotoId=?", PhotoId).Scan(&author_name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// Handle case where no row was found
+			return "", fmt.Errorf("no author found for PhotoId %d", PhotoId)
+		}
+		// For other errors, return them
+		return "", fmt.Errorf("error executing query: %v", err)
+	}
+
+	return author_name, nil
+}
+
 func (db *wasabase) Photolike(username string, PhotoId int64) error {
 	err := db.c.QueryRow("SELECT * FROM Likes WHERE username=? AND PhotoId=?", username, PhotoId).Scan()
 	if !errors.Is(err, sql.ErrNoRows) {
@@ -35,6 +65,7 @@ func (db *wasabase) Photolike(username string, PhotoId int64) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -43,6 +74,7 @@ func (db *wasabase) Photounlike(username string, PhotoId int64) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 

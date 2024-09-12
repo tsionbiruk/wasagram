@@ -114,15 +114,11 @@ func (db *wasabase) Istokenexpired(tokenTime time.Time) bool {
 	timeLayout := "15:04:05"
 	currentTime := time.Now().Format("15:04:05")
 
-	fmt.Print(tokenTime)
-
 	// Adjust this layout to match your date format
 	parsedTime, err := time.Parse(timeLayout, currentTime)
 	if err != nil {
 		return false
 	}
-
-	fmt.Print(parsedTime)
 
 	// Define the expiration duration (1 hour)
 	expirationDuration := time.Hour

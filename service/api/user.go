@@ -13,7 +13,7 @@ import (
 func (rt *_router) GetProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+	target_username := ps.ByName("targetuser")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
