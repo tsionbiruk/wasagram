@@ -4,11 +4,47 @@ import (
 	"fmt"
 )
 
-func (db *wasabase) GetStream(username string) ([]photo, []string, error) {
+func (db *wasabase) GetStream(username string, requester string) ([]photo, []string, error) {
+
+	var exists bool
+	err := db.c.QueryRow("SELECT 1 FROM Users WHERE username=?", username).Scan(&exists)
+	if !exists {
+
+		return nil, nil, fmt.Errorf("user %s doesnt exist", username)
+	} else if err != nil {
+
+		return nil, nil, fmt.Errorf("error getting banned: %w", err)
+	}
+
+	banned := []string{}
+
+	rows, err := db.c.Query("SELECT target_username FROM Bans WHERE username = ?", username)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var users string
+		if err := rows.Scan(&users); err != nil {
+			return nil, nil, fmt.Errorf("failed to scan following: %w", err)
+		}
+		banned = append(banned, users)
+	}
+	fmt.Print(requester)
+
+	for _, v := range banned {
+
+		if v == requester {
+			message := fmt.Sprintf("Requester '%s' is banned.", requester)
+			return nil, nil, fmt.Errorf(message)
+		}
+	}
+
 	photos := []photo{}
 	following := []string{}
 
-	followRows, err := db.c.Query("SELECT username FROM Followes WHERE target_username = ?", username)
+	followRows, err := db.c.Query("SELECT target_username FROM Followes WHERE username = ?", username)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -36,49 +72,49 @@ func (db *wasabase) GetStream(username string) ([]photo, []string, error) {
 
 		for photoRows.Next() {
 			var p photo
-			err := photoRows.Scan(&p.photoId, &p.photo_png, &p.caption, &p.upload_time)
+			err := photoRows.Scan(&p.PhotoId, &p.Photo_png, &p.Caption, &p.Upload_time)
 			if err != nil {
 				return nil, nil, fmt.Errorf("failed to scan photo: %w", err)
 			}
 
 			// Count the number of comments
-			err = db.c.QueryRow("SELECT COUNT(*) FROM Comments WHERE PhotoId=?", p.photoId).Scan(&p.comment_count)
+			err = db.c.QueryRow("SELECT COUNT(*) FROM Comments WHERE PhotoId=?", p.PhotoId).Scan(&p.Comment_count)
 			if err != nil {
 				fmt.Println("Error executing comment count query:", err)
 			}
 
 			// Fetch all comments for the photo
-			comments := []CommentData{}
-			commentRows, err := db.c.Query("SELECT body, upload_time FROM Comments WHERE PhotoId = ?", p.photoId)
+			Comments := []CommentData{}
+			commentRows, err := db.c.Query("SELECT body, upload_time FROM Comments WHERE PhotoId = ?", p.PhotoId)
 			if err != nil {
 				return nil, nil, err
 			}
 			defer commentRows.Close()
 
 			for commentRows.Next() {
-				var comment CommentData
-				err := commentRows.Scan(&comment.body, &comment.upload_time)
+				var Comment CommentData
+				err := commentRows.Scan(&Comment.Body, &Comment.Upload_time)
 				if err != nil {
 					return nil, nil, fmt.Errorf("failed to scan comment: %w", err)
 				}
-				comments = append(comments, comment)
+				Comments = append(Comments, Comment)
 			}
 
 			if err := commentRows.Err(); err != nil {
 				return nil, nil, fmt.Errorf("error during comment row iteration: %w", err)
 			}
 
-			p.Comments = comments
-
+			p.Comments = Comments
+			fmt.Print(Comments)
 			// Count the number of likes
-			err = db.c.QueryRow("SELECT COUNT(*) FROM Likes WHERE PhotoId=?", p.photoId).Scan(&p.like_count)
+			err = db.c.QueryRow("SELECT COUNT(*) FROM Likes WHERE PhotoId=?", p.PhotoId).Scan(&p.Like_count)
 			if err != nil {
 				fmt.Println("Error executing like count query:", err)
 			}
 
 			// Fetch all users who liked the photo
 			likes := []string{}
-			likeRows, err := db.c.Query("SELECT username FROM Likes WHERE PhotoId = ?", p.photoId)
+			likeRows, err := db.c.Query("SELECT username FROM Likes WHERE PhotoId = ?", p.PhotoId)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -97,7 +133,7 @@ func (db *wasabase) GetStream(username string) ([]photo, []string, error) {
 				return nil, nil, err
 			}
 
-			p.likes = likes
+			p.Likes = likes
 
 			// Append the photo to the photos slice
 			photos = append(photos, p)

@@ -19,39 +19,40 @@ func (rt *_router) GetProfile(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	UserProfileInfo, err := rt.db.UserProfile(target_username)
+	userProfile, err := rt.db.UserProfile(target_username, username)
 
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to retrieve profile information: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
-	jsonstr, err := json.Marshal(UserProfileInfo)
+	jsonstr, err := json.Marshal(userProfile)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to marshal profile data: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
+
 	_, _ = w.Write(jsonstr)
 }
 
 func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("target_user")
+	target_username := ps.ByName("targetuser")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
 	}
 
-	photos, stream, err := rt.db.GetStream(target_username)
+	photos, stream, err := rt.db.GetStream(target_username, username)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to retrieve stream: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Can not retrive stream. You are banned: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	response := map[string]interface{}{
-		"stream": stream,
-		"photos": photos,
+		"following": stream,
+		"photos":    photos,
 	}
 
 	// Marshal the combined response into JSON

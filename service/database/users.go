@@ -20,7 +20,7 @@ func (db *wasabase) UpdateUserName(username string, newusername string) error {
 	if err != nil {
 		return fmt.Errorf("failed to update username: %w", err)
 	}
-	fmt.Print("hey")
+
 	// Check if any rows were affected
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {

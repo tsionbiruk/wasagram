@@ -106,12 +106,37 @@ func (db *wasabase) Getfollowing(username string) ([]string, error) {
 	return following, nil
 }
 
-func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
+func (db *wasabase) UserProfile(username string, requester string) (*UserProfileInfo, error) {
+	banned := []string{}
+
+	rows, err := db.c.Query("SELECT target_username FROM Bans WHERE username = ?", username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var users string
+		if err := rows.Scan(&users); err != nil {
+			return nil, fmt.Errorf("failed to scan banned: %w", err)
+		}
+		banned = append(banned, users)
+	}
+	fmt.Print(requester)
+
+	for _, v := range banned {
+
+		if v == requester {
+			message := fmt.Sprintf("Requester '%s' is banned.", requester)
+			return nil, fmt.Errorf(message)
+		}
+	}
+
 	var userProfile UserProfileInfo
 	userProfile.Username = username
 
 	// Query the profile picture
-	err := db.c.QueryRow("SELECT profil_pic FROM Users WHERE username = ?", username).Scan(&userProfile.ProfilPic)
+	err = db.c.QueryRow("SELECT profil_pic FROM Users WHERE username = ?", username).Scan(&userProfile.ProfilPic)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -142,7 +167,7 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 
 	//get photos
 	photos := []photo{}
-	rows, err := db.c.Query("SELECT photoId,photo_png,caption,upload_time FROM Photos WHERE username =? ORDER BY upload_time DESC", username)
+	rows, err = db.c.Query("SELECT photoId,photo_png,caption,upload_time FROM Photos WHERE username =? ORDER BY upload_time DESC", username)
 	if err != nil {
 		return nil, err
 	}
@@ -151,19 +176,19 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 	for rows.Next() {
 		var p photo
 
-		err := rows.Scan(&p.photoId, &p.photo_png, &p.caption, &p.upload_time)
+		err := rows.Scan(&p.PhotoId, &p.Photo_png, &p.Caption, &p.Upload_time)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan photo: %w", err)
 		}
 
-		err = db.c.QueryRow("SELECT COUNT(*) FROM Comments WHERE PhotoId=?", p.photoId).Scan(&p.comment_count)
+		err = db.c.QueryRow("SELECT COUNT(*) FROM Comments WHERE PhotoId=?", p.PhotoId).Scan(&p.Comment_count)
 
 		if err != nil {
 			fmt.Println("Error executing query:", err)
 		}
 
-		comments := []CommentData{}
-		commentRows, err := db.c.Query("SELECT body, upload_time FROM Comments WHERE photoId=?", p.photoId)
+		Comments := []CommentData{}
+		commentRows, err := db.c.Query("SELECT body, upload_time FROM Comments WHERE PhotoId=?", p.PhotoId)
 		if err != nil {
 			return nil, err
 		}
@@ -172,28 +197,26 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 		for commentRows.Next() {
 
 			var comment CommentData
-			err := commentRows.Scan(&comment.body, &comment.upload_time)
+			err := commentRows.Scan(&comment.Body, &comment.Upload_time)
 			if err != nil {
 				return nil, fmt.Errorf("failed to scan comment: %w", err)
 			}
-			comments = append(comments, comment)
+			Comments = append(Comments, comment)
 		}
 		if err := commentRows.Err(); err != nil {
 			return nil, fmt.Errorf("error during comment row iteration: %w", err)
 		}
-		p.Comments = comments
-
-		fmt.Print(comments)
-		fmt.Print(p.comment_count)
+		p.Comments = Comments
+		fmt.Print(Comments)
 
 		likes := []string{}
 
-		err = db.c.QueryRow("SELECT COUNT(*) FROM Likes WHERE PhotoId=?", p.photoId).Scan(&p.like_count)
+		err = db.c.QueryRow("SELECT COUNT(*) FROM Likes WHERE PhotoId=?", p.PhotoId).Scan(&p.Like_count)
 
 		if err != nil {
 			fmt.Println("Error executing query:", err)
 		}
-		likeRows, err := db.c.Query("SELECT username FROM Likes WHERE photoId = ?", p.photoId)
+		likeRows, err := db.c.Query("SELECT username FROM Likes WHERE photoId = ?", p.PhotoId)
 		if err != nil {
 			return nil, err
 		}
@@ -213,12 +236,9 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 		if err = rows.Err(); err != nil {
 			return nil, err
 		}
-		p.likes = likes
-		fmt.Print(likes)
-		fmt.Print(p.like_count)
+		p.Likes = likes
 
 		photos = append(photos, p)
-		fmt.Print(photos)
 
 	}
 
@@ -227,6 +247,7 @@ func (db *wasabase) UserProfile(username string) (*UserProfileInfo, error) {
 	}
 
 	userProfile.Photo = photos
+
 	userProfile.Photo_count = len(photos)
 
 	return &userProfile, nil

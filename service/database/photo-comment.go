@@ -11,6 +11,7 @@ import (
 
 // figure out how to get username of the logged in user.
 func (db *wasabase) GetAuthorId(PhotoId int64) (string, error) {
+
 	var author_name string
 	err := db.c.QueryRow("SELECT username FROM Photos WHERE PhotoId=?", PhotoId).Scan(&author_name)
 	if err != nil {
@@ -70,7 +71,17 @@ func (db *wasabase) Photolike(username string, PhotoId int64) error {
 }
 
 func (db *wasabase) Photounlike(username string, PhotoId int64) error {
-	_, err := db.c.Exec("DELETE FROM Likes WHERE username=? AND PhotoId=?", username, PhotoId)
+	var exists bool
+	err := db.c.QueryRow("SELECT 1 FROM Users WHERE username=?", username).Scan(&exists)
+	if !exists {
+
+		return fmt.Errorf("user %s doesnt exist", username)
+	} else if err != nil {
+
+		return fmt.Errorf("error banning follower: %w", err)
+	}
+
+	_, err = db.c.Exec("DELETE FROM Likes WHERE username=? AND PhotoId=?", username, PhotoId)
 	if err != nil {
 		return err
 	}

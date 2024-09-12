@@ -61,8 +61,8 @@ type AppDatabase interface {
 
 	//other users
 
-	UserProfile(username string) (*UserProfileInfo, error)
-	GetStream(username string) ([]photo, []string, error)
+	UserProfile(username string, requester string) (*UserProfileInfo, error)
+	GetStream(username string, requester string) ([]photo, []string, error)
 
 	UploadPhoto(username string, caption string, photo []byte) error
 	DeletePost(PhotoId int64) (string, error) //when you delete a photo you delete the comment and likes as well
@@ -97,19 +97,19 @@ type UserProfileInfo struct {
 }
 
 type photo struct {
-	photoId       int64
-	photo_png     []byte
-	caption       string
-	upload_time   time.Time
+	PhotoId       int64
+	Photo_png     []byte
+	Caption       string
+	Upload_time   time.Time
 	Comments      []CommentData
-	comment_count int64
-	like_count    int64
-	likes         []string
+	Comment_count int64
+	Like_count    int64
+	Likes         []string
 }
 
 type CommentData struct {
-	upload_time time.Time
-	body        string
+	Upload_time time.Time
+	Body        string
 }
 
 // New returns a new instance of AppDatabase based on the SQLite connection `db`.
@@ -147,8 +147,8 @@ func New(db *sql.DB) (AppDatabase, error) {
 			username STRING, 
 			target_username STRING,
 			PRIMARY KEY(username, target_username) ,
-			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE ON UPDATE CASCADE,
-			FOREIGN KEY(target_username) REFERENCES Users(username) ON DELETE CASCADE ON UPDATE CASCADE
+			FOREIGN KEY(username) REFERENCES Users(username) ON UPDATE CASCADE,
+			FOREIGN KEY(target_username) REFERENCES Users(username) ON UPDATE CASCADE
 		);`
 		_, err = db.Exec(followesTable)
 		if err != nil {
@@ -162,8 +162,8 @@ func New(db *sql.DB) (AppDatabase, error) {
 			username STRING,
 			target_username STRING,
 			PRIMARY KEY(username, target_username),
-			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE ON UPDATE CASCADE,
-			FOREIGN KEY(target_username) REFERENCES Users(username) ON DELETE CASCADE ON UPDATE CASCADE
+			FOREIGN KEY(username) REFERENCES Users(username) ON UPDATE CASCADE,
+			FOREIGN KEY(target_username) REFERENCES Users(username) ON UPDATE CASCADE
 		);`
 		_, err = db.Exec(bansTable)
 		if err != nil {
@@ -180,7 +180,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			caption TEXT,
 			upload_time DATE,
 			
-			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE ON UPDATE CASCADE
+			FOREIGN KEY(username) REFERENCES Users(username)  ON UPDATE CASCADE
 		);`
 		_, err = db.Exec(photosTable)
 		if err != nil {
@@ -194,7 +194,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			username STRING,
 			PhotoId INTEGER,
 			PRIMARY KEY(username, PhotoId),
-			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE ON UPDATE CASCADE,
+			FOREIGN KEY(username) REFERENCES Users(username)  ON UPDATE CASCADE,
 			FOREIGN KEY(PhotoId) REFERENCES Photos(PhotoId) ON DELETE CASCADE 
 		);`
 		_, err = db.Exec(likesTable)
@@ -212,7 +212,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			body TEXT,
 			upload_time DATE,
 			
-			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE ON UPDATE CASCADE,
+			FOREIGN KEY(username) REFERENCES Users(username)  ON UPDATE CASCADE,
 			FOREIGN KEY(PhotoId) REFERENCES Photos(PhotoId) ON DELETE CASCADE
 		);`
 		_, err = db.Exec(commentsTable)
@@ -229,7 +229,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 			PhotoId INTEGER,
 			
 			PRIMARY KEY(PhotoId),
-			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE ON UPDATE CASCADE,
+			FOREIGN KEY(username) REFERENCES Users(username) ON UPDATE CASCADE,
 			FOREIGN KEY(PhotoId) REFERENCES Photos(PhotoId) ON DELETE CASCADE
 			
 		);`
@@ -249,7 +249,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		
 
 			
-			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE ON UPDATE CASCADE
+			FOREIGN KEY(username) REFERENCES Users(username) ON UPDATE CASCADE
 			
 			
 		);`

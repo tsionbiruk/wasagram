@@ -30,7 +30,16 @@ func (db *wasabase) BanUsers(username string, target_username string) (string, e
 
 func (db *wasabase) UnBanUser(username string, target_username string) (string, error) {
 	if username != target_username {
-		_, err := db.c.Exec("DELETE FROM Bans WHERE username=? AND target_username=?", username, target_username)
+		var exists bool
+		err := db.c.QueryRow("SELECT 1 FROM Users WHERE username=?", target_username).Scan(&exists)
+		if !exists {
+
+			return "", fmt.Errorf("user %s doesnt exist", target_username)
+		} else if err != nil {
+
+			return "", fmt.Errorf("error banning follower: %w", err)
+		}
+		_, err = db.c.Exec("DELETE FROM Bans WHERE username=? AND target_username=?", username, target_username)
 		if err != nil {
 			return "", err
 		}
@@ -60,7 +69,16 @@ func (db *wasabase) FollowUser(username string, target_username string) (string,
 }
 func (db *wasabase) UnFollowUser(username string, target_username string) (string, error) {
 	if username != target_username {
-		_, err := db.c.Exec("DELETE FROM Followes WHERE username=? AND target_username=?", username, target_username)
+		var exists bool
+		err := db.c.QueryRow("SELECT 1 FROM Users WHERE username=?", target_username).Scan(&exists)
+		if !exists {
+
+			return "", fmt.Errorf("user %s doesnt exist", target_username)
+		} else if err != nil {
+
+			return "", fmt.Errorf("error banning follower: %w", err)
+		}
+		_, err = db.c.Exec("DELETE FROM Followes WHERE username=? AND target_username=?", username, target_username)
 		if err != nil {
 			return "", err
 		}

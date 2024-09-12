@@ -28,13 +28,12 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/users/:user/banned/:targetuser", rt.wrap(rt.GetBanned))
 	rt.router.GET("/users/:user/followers/:targetuser", rt.wrap(rt.GetFollowers))
 	rt.router.GET("/users/:user/following/:targetuser", rt.wrap(rt.Getfollowing))
-
-	//rt.router.GET("/photos/:photoid", rt.wrap(rt.getPhoto))
-	rt.router.POST("/users/:user/username", rt.wrap(rt.Rename))
-
-	rt.router.GET("/users/:user/profile/:targetuser", rt.wrap(rt.GetProfile))
-	rt.router.GET("/users/:user/stream", rt.wrap(rt.GetStream))
 	rt.router.GET("/users", rt.wrap(rt.GetUsers))
+	rt.router.GET("/users/:user/profile/:targetuser", rt.wrap(rt.GetProfile))
+
+	rt.router.GET("/users/:user/stream/:targetuser", rt.wrap(rt.GetStream))
+
+	rt.router.POST("/users/:user/username", rt.wrap(rt.Rename))
 
 	return rt.router
 }
