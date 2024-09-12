@@ -240,14 +240,12 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: Maria
-                  pattern: 'ˆ.*?$'
-                  minLength: 3
-                  maxLength: 16
+              
+              type: string
+              example: Maria
+              pattern: 'ˆ.*?$'
+              minLength: 3
+              maxLength: 16
         required: true
       responses:
         '201':
@@ -281,7 +279,11 @@ paths:
       requestBody:
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/user"}
+            schema:
+              
+              type: string
+              example: Maria
+              
       
 
       responses:

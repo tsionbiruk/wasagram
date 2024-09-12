@@ -8,9 +8,10 @@ import (
 	"strconv"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/tsionbiruk/wasagram/service/api/reqcontext"
 )
 
-func (rt *_router) PostComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) PostComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")
@@ -62,7 +63,7 @@ func (rt *_router) PostComments(w http.ResponseWriter, r *http.Request, ps httpr
 	w.Write(responseData)
 }
 
-func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 	photo_id_str := ps.ByName("PhotoId")

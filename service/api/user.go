@@ -66,8 +66,9 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 
 }
 
-func (rt *_router) Rename(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
+func (rt *_router) Rename(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
+
 	username := ps.ByName("user")
 
 	if token := rt.Authorize(w, r, username); !token {
@@ -82,14 +83,14 @@ func (rt *_router) Rename(w http.ResponseWriter, r *http.Request, ps httprouter.
 
 	var newname string
 
-	if newname == "" {
-		http.Error(w, "Invalid username!", http.StatusBadRequest)
-		return
-	}
-
 	err = json.Unmarshal(body, &newname)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to unmarshal username from POST request body: %s", err.Error()), http.StatusBadRequest)
+		return
+	}
+
+	if newname == "" {
+		http.Error(w, "Invalid username!", http.StatusBadRequest)
 		return
 	}
 
@@ -162,7 +163,7 @@ func (rt *_router) DoLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 		http.Error(w, fmt.Sprintf("Failed to either retrieve or create user: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-
+	fmt.Print(token)
 	//MARSHAL THETOKEN NOT THE USERNAME
 
 	jsonstr, err := json.Marshal(token)

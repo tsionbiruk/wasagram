@@ -85,7 +85,7 @@ func (rt *_router) Photolike(w http.ResponseWriter, r *http.Request, ps httprout
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 	target_username := ps.ByName("target_user")
-	photo_id_str := ps.ByName("PhotoId")
+	photo_id_str := ps.ByName("photoid")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -124,7 +124,7 @@ func (rt *_router) Photounlike(w http.ResponseWriter, r *http.Request, ps httpro
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
 	target_username := ps.ByName("target_user")
-	photo_id_str := ps.ByName("PhotoId")
+	photo_id_str := ps.ByName("photoid")
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -173,7 +173,8 @@ func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprou
 	w.Header().Set("Content-Type", "application/json")
 	//username of the persons post you want to delete
 	username := ps.ByName("user")
-	photo_id_str := ps.ByName("PhotoId")
+	photo_id_str := ps.ByName("photoid")
+	fmt.Print(photo_id_str)
 
 	if token := rt.Authorize(w, r, username); !token {
 		return

@@ -121,7 +121,7 @@ func (rt *_router) Authorize(w http.ResponseWriter, r *http.Request, username st
 	var user_token int64
 	user_token, err = rt.db.Gettoken(username)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("User doesnt exist in Tokens table pelease log back in to get a token: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("User doesnt exist in Tokens table please log back in to get a token: %s", err.Error()), http.StatusInternalServerError)
 		return false
 	}
 	if token != user_token {

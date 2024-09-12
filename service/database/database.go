@@ -144,7 +144,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		followesTable := `CREATE TABLE Followes(
 			username STRING, 
 			target_username STRING,
-			PRIMARY KEY(username, target_username),
+			PRIMARY KEY(username, target_username) ,
 			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE,
 			FOREIGN KEY(target_username) REFERENCES Users(username) ON DELETE CASCADE
 		);`
@@ -172,12 +172,12 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='Photos';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
 		photosTable := `CREATE TABLE Photos (
-			PhotoId INTEGER AUTOINCREMENT,
+			PhotoId INTEGER PRIMARY KEY AUTOINCREMENT,
 			username STRING,
 			photo_png BLOB,
 			caption TEXT,
 			upload_time DATE,
-			PRIMARY KEY(PhotoId),
+			
 			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE
 		);`
 		_, err = db.Exec(photosTable)
@@ -204,12 +204,12 @@ func New(db *sql.DB) (AppDatabase, error) {
 	err = db.QueryRow(`SELECT name FROM sqlite_master WHERE type='table' AND name='Comments';`).Scan(&tableName)
 	if errors.Is(err, sql.ErrNoRows) {
 		commentsTable := `CREATE TABLE Comments (
-			CommentId INTEGER AUTOINCREMENT,
+			CommentId INTEGER PRIMARY KEY AUTOINCREMENT,
 			username STRING,
 			PhotoId INTEGER,
 			body TEXT,
 			upload_time DATE,
-			PRIMARY KEY(CommentId),
+			
 			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE,
 			FOREIGN KEY(PhotoId) REFERENCES Photos(PhotoId) ON DELETE CASCADE
 		);`
@@ -243,7 +243,8 @@ func New(db *sql.DB) (AppDatabase, error) {
 			
 			username STRING,
 			Token INTEGER,
-			time TIME, 
+			time INTEGER, 
+		
 
 			PRIMARY KEY(Token),
 			FOREIGN KEY(username) REFERENCES Users(username) ON DELETE CASCADE
@@ -257,7 +258,8 @@ func New(db *sql.DB) (AppDatabase, error) {
 	}
 
 	return &wasabase{
-		c: db,
+		c:        db,
+		tokenGen: NewTokenGenerator(),
 	}, nil
 }
 
