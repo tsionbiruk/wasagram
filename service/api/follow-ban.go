@@ -20,6 +20,23 @@ func (rt *_router) Followuser(w http.ResponseWriter, r *http.Request, ps httprou
 
 	fmt.Print(target_username)
 
+	if username == target_username {
+		response := map[string]string{
+			"message": "Can not follow youself",
+		}
+
+		responseData, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to marshal response: %s", err.Error()), http.StatusInternalServerError)
+			return
+		}
+
+		// Write the response
+		w.WriteHeader(http.StatusOK)
+		w.Write(responseData)
+		return
+	}
+
 	_, err := rt.db.FollowUser(username, target_username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to follow target: %s", err.Error()), http.StatusInternalServerError)
@@ -132,6 +149,22 @@ func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	target_username := ps.ByName("targetuser")
 
 	if token := rt.Authorize(w, r, username); !token {
+		return
+	}
+
+	if username == target_username {
+		response := map[string]string{
+			"message": "Cannot unban yourself",
+		}
+		responseData, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Failed to marshal response: %s", err.Error()), http.StatusInternalServerError)
+			return
+		}
+
+		// Write the response
+		w.WriteHeader(http.StatusOK)
+		w.Write(responseData)
 		return
 	}
 

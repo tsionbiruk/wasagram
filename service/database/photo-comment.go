@@ -26,34 +26,70 @@ func (db *wasabase) GetAuthorId(PhotoId int64) (string, error) {
 	return author_name, nil
 }
 
-func (db *wasabase) GetAuthorliker(PhotoId int64) (string, error) {
-	var author_name string
-	err := db.c.QueryRow("SELECT username FROM Likes WHERE PhotoId=?", PhotoId).Scan(&author_name)
+func (db *wasabase) GetAuthorliker(PhotoId int64) ([]string, error) {
+	var author_names []string
+
+	// Execute the query expecting multiple rows
+	rows, err := db.c.Query("SELECT username FROM Likes WHERE PhotoId=?", PhotoId)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// Handle case where no row was found
-			return "", fmt.Errorf("no author found for PhotoId %d", PhotoId)
+			// Handle case where no rows are found
+			return nil, fmt.Errorf("no authors found for PhotoId %d", PhotoId)
 		}
 		// For other errors, return them
-		return "", fmt.Errorf("error executing query: %v", err)
+		return nil, fmt.Errorf("error executing query: %v", err)
+	}
+	defer rows.Close()
+
+	// Iterate over the result set and append to the author_names slice
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, fmt.Errorf("error scanning row: %v", err)
+		}
+		author_names = append(author_names, username)
 	}
 
-	return author_name, nil
+	// Check for any errors encountered during iteration
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error during row iteration: %v", err)
+	}
+
+	return author_names, nil
+
 }
 
-func (db *wasabase) GetAuthorcommenter(PhotoId int64) (string, error) {
-	var author_name string
-	err := db.c.QueryRow("SELECT username FROM Comments WHERE PhotoId=?", PhotoId).Scan(&author_name)
+func (db *wasabase) GetAuthorcommenter(PhotoId int64) ([]string, error) {
+	var author_names []string
+
+	// Execute the query expecting multiple rows
+	rows, err := db.c.Query("SELECT username FROM Comments WHERE PhotoId=?", PhotoId)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// Handle case where no row was found
-			return "", fmt.Errorf("no author found for PhotoId %d", PhotoId)
+			// Handle case where no rows are found
+			return nil, fmt.Errorf("no authors found for PhotoId %d", PhotoId)
 		}
 		// For other errors, return them
-		return "", fmt.Errorf("error executing query: %v", err)
+		return nil, fmt.Errorf("error executing query: %v", err)
+	}
+	defer rows.Close()
+
+	// Iterate over the result set and append to the author_names slice
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, fmt.Errorf("error scanning row: %v", err)
+		}
+		author_names = append(author_names, username)
 	}
 
-	return author_name, nil
+	// Check for any errors encountered during iteration
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error during row iteration: %v", err)
+	}
+
+	return author_names, nil
+
 }
 
 func (db *wasabase) Photolike(username string, PhotoId int64) error {

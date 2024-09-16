@@ -85,7 +85,7 @@ func (db *wasabase) GetStream(username string, requester string) ([]photo, []str
 
 			// Fetch all comments for the photo
 			Comments := []CommentData{}
-			commentRows, err := db.c.Query("SELECT body, upload_time FROM Comments WHERE PhotoId = ?", p.PhotoId)
+			commentRows, err := db.c.Query("SELECT username, body, upload_time FROM Comments WHERE PhotoId = ?", p.PhotoId)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -93,7 +93,7 @@ func (db *wasabase) GetStream(username string, requester string) ([]photo, []str
 
 			for commentRows.Next() {
 				var Comment CommentData
-				err := commentRows.Scan(&Comment.Body, &Comment.Upload_time)
+				err := commentRows.Scan(&Comment.Author, &Comment.Body, &Comment.Upload_time)
 				if err != nil {
 					return nil, nil, fmt.Errorf("failed to scan comment: %w", err)
 				}

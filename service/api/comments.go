@@ -83,19 +83,30 @@ func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps htt
 		http.Error(w, fmt.Sprintf("Failed to parse comment ID: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	var target_username string
-	target_username, err = rt.db.GetAuthorcommenter(PhotoId)
+	var og_commenter []string
+	og_commenter, err = rt.db.GetAuthorcommenter(PhotoId)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to post comment: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
-	if username == target_username {
-		err = rt.db.Uncomment(CommentId)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to delete comment: %s", err.Error()), http.StatusInternalServerError)
-			return
+	found := false // Flag to track if username is found
+
+	for _, v := range og_commenter {
+		if v == username {
+			err = rt.db.Uncomment(CommentId)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to unlike the photo, can't unlike what you didn't like: %s", err.Error()), http.StatusInternalServerError)
+				return
+			}
+			found = true // Mark that username was found
+			break        // Exit the loop since the user has been found
 		}
+	}
+
+	// Execute the else-like condition if the username wasn't found
+	if !found {
+		http.Error(w, "You cannot unlike a comment that you didn't make", http.StatusBadRequest)
 	}
 
 	// Retrieve comments

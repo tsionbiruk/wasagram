@@ -39,6 +39,15 @@ func (db *wasabase) UnBanUser(username string, target_username string) (string, 
 
 			return "", fmt.Errorf("error banning follower: %w", err)
 		}
+
+		err = db.c.QueryRow("SELECT 1 FROM Followes WHERE username=? AND target_username=?", username, target_username).Scan(&exists)
+		if !exists {
+
+			return "", fmt.Errorf("user %s didnt ban user %s", username, target_username)
+		} else if err != nil {
+
+			return "", fmt.Errorf("error unbanning: %w", err)
+		}
 		_, err = db.c.Exec("DELETE FROM Bans WHERE username=? AND target_username=?", username, target_username)
 		if err != nil {
 			return "", err
@@ -76,7 +85,16 @@ func (db *wasabase) UnFollowUser(username string, target_username string) (strin
 			return "", fmt.Errorf("user %s doesnt exist", target_username)
 		} else if err != nil {
 
-			return "", fmt.Errorf("error banning follower: %w", err)
+			return "", fmt.Errorf("error unfollowing: %w", err)
+		}
+
+		err = db.c.QueryRow("SELECT 1 FROM Followes WHERE username=? AND target_username=?", username, target_username).Scan(&exists)
+		if !exists {
+
+			return "", fmt.Errorf("user %s doesnt follow user %s", username, target_username)
+		} else if err != nil {
+
+			return "", fmt.Errorf("error unfollowing: %w", err)
 		}
 		_, err = db.c.Exec("DELETE FROM Followes WHERE username=? AND target_username=?", username, target_username)
 		if err != nil {

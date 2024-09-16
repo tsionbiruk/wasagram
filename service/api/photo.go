@@ -136,18 +136,20 @@ func (rt *_router) Photounlike(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	var og_liker string
+	var og_liker []string
 	og_liker, err = rt.db.GetAuthorliker(PhotoId)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to post comment: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
-	if username == og_liker {
-		err = rt.db.Photounlike(username, PhotoId)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("Failed to unlike the photo, cant unlike what you didn't like: %s", err.Error()), http.StatusInternalServerError)
-			return
+	for _, v := range og_liker {
+		if v == username {
+			err = rt.db.Photounlike(username, PhotoId)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Failed to unlike the photo, cant unlike what you didn't like: %s", err.Error()), http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 
