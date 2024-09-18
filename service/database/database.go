@@ -72,7 +72,7 @@ type AppDatabase interface {
 
 	Comment(username string, PhotoId int64, text string) error
 	Uncomment(CommentId int64) error
-	Getcomment(PhotoId int64) ([]string, error)
+	Getcomment(PhotoId int64) ([]CommentData, error)
 
 	Gettoken(username string) (int64, error)
 	Gettokentime(username string, token int64) (time.Time, error)
@@ -108,6 +108,7 @@ type photo struct {
 }
 
 type CommentData struct {
+	Id          int64
 	Author      string
 	Upload_time time.Time
 	Body        string

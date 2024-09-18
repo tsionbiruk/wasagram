@@ -217,21 +217,21 @@ func (db *wasabase) Uncomment(CommentId int64) error {
 	return nil
 }
 
-func (db *wasabase) Getcomment(PhotoId int64) ([]string, error) {
-	comments := []string{}
-	commentRows, err := db.c.Query("SELECT body FROM Comments WHERE photoId = ?", PhotoId)
+func (db *wasabase) Getcomment(PhotoId int64) ([]CommentData, error) {
+	comments := []CommentData{}
+	commentRows, err := db.c.Query("SELECT CommentId , username, body, upload_time FROM Comments WHERE photoId = ?", PhotoId)
 	if err != nil {
 		return nil, err
 	}
 
 	defer commentRows.Close()
 	for commentRows.Next() {
-		var user string
-		err := commentRows.Scan(&user)
+		var comment CommentData
+		err := commentRows.Scan(&comment.Id, &comment.Author, &comment.Body, &comment.Upload_time)
 		if err != nil {
 			return nil, err
 		}
-		comments = append(comments, user)
+		comments = append(comments, comment)
 
 	}
 	if err = commentRows.Err(); err != nil {
