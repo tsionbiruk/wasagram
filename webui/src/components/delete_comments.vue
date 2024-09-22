@@ -1,10 +1,7 @@
 <script>
-import PostComments from 'webui/src/components/post_comments.vue'; 
+
 export default {
-    components: {
-    PostComments,  // Register PostComments component
     
-  },
 	props: ['params'],
     
 	data: function() {
