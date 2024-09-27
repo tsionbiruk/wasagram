@@ -69,6 +69,7 @@ type AppDatabase interface {
 	Getlikes(PhotoId int64) ([]string, error)
 	Photolike(username string, PhotoId int64) error
 	Photounlike(username string, PhotoId int64) error
+	PhotoGet(photo_id int64) ([]byte, error)
 
 	Comment(username string, PhotoId int64, text string) error
 	Uncomment(CommentId int64) error

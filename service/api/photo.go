@@ -216,3 +216,22 @@ func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprou
 	w.Write(responseData)
 
 }
+
+func (rt *_router) getPhoto(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
+	w.Header().Set("Content-Type", "image/png")
+
+	photo_id_str := ps.ByName("photoid")
+	photo_id, err := strconv.ParseInt(photo_id_str, 10, 64)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to parse photo ID: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	photo, err := rt.db.PhotoGet(photo_id)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to retrieve photo: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	_, _ = w.Write(photo)
+}

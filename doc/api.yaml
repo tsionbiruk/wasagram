@@ -6,741 +6,280 @@ info:
   description: API documentation for the WasaPhoto project.
   version: 1.0.0
 
-
-components:
-  securitySchemes:
-    BearerAuth:
-      
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
-  schemas: 
-    user:
-      title: "user"
-      description: object that uses this app
-      type: object
-      properties: 
-        username:
-          description: unique identifier for the user. The user name
-          type: string
-          example: "maria"
-          minLength: 3
-          maxLength: 16
-          readOnly: false
-        
-        profil:
-          description: the profile of a user containing all the information about the user
-          type: array
-          minItems: 0
-          maxItems: 800
-          items: 
-            $ref: '#/components/schemas/profil'
-    
-   
-    post: 
-      title: Post
-      description: object that user displays on profil
-      type : object
-      properties: 
-        username:
-          description: unique identifier for the user. The user name that is the owner of the post
-          type: string
-          example: "maria"
-          minLength: 3
-          maxLength: 16
-        
-        PhotoId:
-          type: integer
-          
-          description: The unique identifier of the image 
-                  
-        
-             
-    like: 
-      title: like
-      description: object contaianing a count and list of users that liked the image
-      type: object 
-      properties: 
-      
-        username: 
-          type: string
-          description: name of the user that liked the post
-          example: "abel"
-          
-          minLength: 3
-          maxLength: 16
-        
-        likes: 
-          type: string
-          description: usernamw that liked the post 
-          example: "sarah"
-          minLength: 3
-          maxLength: 16
-        
-        like_count: 
-          type: integer
-          description: total number of likes a picture has
-          example: 8
-        
-        PhotoId: 
-          type: integer
-          description: id of the photo the user liked
-          example: 6
-    
-    comment: 
-      title: comment
-      description: text users leave on a post
-      type: object
-      properties: 
-        
-        username: 
-          type: string
-          description: name of the user that commented on the post
-          example: "abel"
-          minLength: 3
-          maxLength: 16
-          
-        comment: 
-          type: string
-          description: text left by a useron a post
-          example: "slay"
-          minLength: 3
-          maxLength: 16
-        
-        comment_count: 
-          type: integer
-          description: number of comments left on a post 
-          example: 5
-        
-        PhotoId: 
-          type: integer
-          description: id of the photo the user commented on
-          example: 6
-          
-        date-time: 
-          type: string
-          description: upload time of the comment
-          format: date-time
-          example: "2024-08-07T14:20:00Z"
-    
-    photo: 
-      title: Photo
-      description: object that user displays on profil
-      type : object
-      properties: 
-        
-        username: 
-          type: string
-          description: name of the user that made the post
-          example: "abel"
-          minLength: 3
-          maxLength: 16
-        
-        picture:
-          
-          type: string
-          format: binary
-          #think about the encoding in the backend 
-          description: The image file to upload
-                  
-        caption: 
-           type: string
-           description: Additional text associated with the picture
-        
-        
-        date-time: 
-          type: string
-          description: upload time of the post
-          format: date-time
-          example: "2024-08-07T14:20:00Z"
-          
-        like: 
-          description: reaction to a post
-          type: array
-          minItems: 0
-          maxItems: 800
-          items: 
-            
-             $ref: '#/components/schemas/like'
-          
-        comment: 
-          description: text left on a post by a user
-          type: array
-          minItems: 0
-          maxItems: 800
-          items: 
-             $ref: '#/components/schemas/comment'
-    
-    profil: 
-      title: "profil"
-      description: object that displays content and info from the user such as the user’s photos, number of photo, followers and following
-      type: object
-      
-      properties:
-        username:
-          description: unique identifier for the user. The user name that ownes the profile
-          type: string
-          minLength: 3
-          maxLength: 16
-          #each profil is linked with a user
-        profile_pic:
-          
-          type: string
-          format: binary
-          #think about the encoding in the backend 
-          description: The image file to upload 
-        
-        stream:
-          description: list of proils of the people a user follows
-          type: array
-          minItems: 0
-          maxItems: 800
-          items: 
-            $ref: '#/components/schemas/post'
-        
-        followers: 
-          description: The number of users that follow a certain account
-          type: integer
-        
-        following: 
-          description: The number of users a certain account follows
-          type: integer
-          
-        ban:
-          description: The number of accounts a user blocked
-          type: integer
-
-    
-  parameters:
-    username:
-      schema:
-        type: string
-        example: "mimi"
-        minLength: 3
-        maxLength: 16
-       
-      name: username
-      in : path
-      required: true
-      description: name of the user
-    
-    target_username:
-      schema:
-        type: string
-        example: "mimi"
-        minLength: 3
-        maxLength: 16
-       
-      name: target_username
-      in : path
-      required: true
-      description: name of the target user
-      
-    PhotoId: 
-      schema:
-        type: integer
-        example: 5
-        readOnly: true 
-      name: PhotoId
-      in : path
-      required: true
-      description: Id of the photo
-    
-    Commentid: 
-      schema:
-        type: integer
-        example: 7
-        readOnly: true 
-      name: Commentid
-      in : path
-      required: true
-      description: Id of the comment
-    
-   
 security:
-  - BearerAuth: []
+  - BearerAuth: [] 
+tags:
+  - name: "User"
+    description: "Endpoints for user actions"
+  - name: "User interaction"
+    description: "Endpoints for interactions between users"
+  - name: "Photo"
+    description: "Endpoints for users' own photo actions"
+  - name: "Photo interaction"
+    description: "Endpoints for interactions with other users' photos"
 
 
 paths:
   /session:
     post:
-      security:
-      - BearerAuth: []
-    
-    
-      tags: ["login"]
-      summary: Logs in the user
-      description: |-
-        If the user does not exist, it will be created,
-        and an identifier is returned.
-        If the user exists, the user identifier is returned.
+      tags: ["User"]
+      summary: doLogin - Logs in the user.
+      description: |
+        If the user does not exist, a new user is created and its ID is
+        returned. Otherwise, the ID of the existing user is returned.
       operationId: doLogin
       requestBody:
         description: User details
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  example: Maria
-                  
-                  minLength: 3
-                  maxLength: 16
-        required: true
+              $ref: "#/components/schemas/user"
       responses:
-        '201':
-          description: User log-in action successful
+        '200':
+          description: User log-in successful
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  identifier:
-                    
-                    type: integer
-                    example: 784
-        '400': 
-          description: Bad Request. Username doesnt fit the description.
-        
-  
+                $ref: "#/components/schemas/UserToken"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
   #updating username  
   /users/{username}/username:
-    
+    parameters:
+    - $ref: "#/components/parameters/username"
     put:
-      security:
-      - BearerAuth: []
-      
-      tags: ["Rename"]
-      
-      operationId: "SetUserName"
-      summary: update the username
-      description: change the unique identifier of a pre-existing user.
-      
-      parameters:
-      - $ref: "#/components/parameters/username"
-      
+      tags: ["User"]
+      summary: setMyUserName - Changes the username of the current user.
+      operationId: setMyUserName
+      description: set or change the username
       requestBody:
+        description: Request details
         content:
           application/json:
-            schema: { $ref: "#/components/schemas/user"}
-      
-
+            schema:
+              $ref: "#/components/schemas/user"
       responses:
-        "201":
-          description: Username updated successfully.
+        '200':
+          description: Username change successful
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  identifier:
-                    
-                    type: string
-                    example: "rodi"
-                    minLength: 3
-                    maxLength: 16
-      
-        "400":
-          description: Bad request. Username doesn't exist or validation failed.
-          
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-
-        "500":
-          description: Internal Server Error. Could be an error in authentication or processing.
-          
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
           content:
-            application/json:  # Content type is defined because a body is returned
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
   
   #upload a photo
   /users/{username}/photos/:
     
+    parameters:
+    - $ref: "#/components/parameters/username"
     post:
-      security:
-      - BearerAuth: []
-      
       tags: ["Photo"]
-      
-      operationId: "Uploadphoto"
-      summary: creating a new post 
+      summary: uploadPhoto - Uploads a new photo to the current user's profile.
+      operationId: uploadPhoto
       description: upload a photo linked to the id of the user.
       
-      parameters:
-      - $ref: "#/components/parameters/username"
-      
       requestBody:
-        required: true
+        description: The photo to upload
         content:
-          multipart/form-data:
+          image/png:
             schema:
-              type: object
-              properties:
-                photo:
-                  type: string
-                  format: binary
-                  description: The photo file to upload.
-                  
+              $ref: "#/components/schemas/photo"
       responses:
-        "201":
-          description: Photo uploaded successfully.
+        '201':
+          description: Photo successfully uploaded
           content:
             application/json:
-              schema: 
-                $ref: "#/components/schemas/post"  # If a post object is returned, ensure this reflects the actual response
-        
-        "400":
-          description: Bad Request. Username doesn't exist or invalid request.
-          content:
-            application/json:  
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-  
-        "404":
-          description: Invalid photo format or photo not found.
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-  
-        "500":
-          description: Internal Server Error - Could be an error of authentication or server issue.
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
     
   #delete post
   /users/{username}/photos/{PhotoId}:
+    parameters:
+    - $ref: "#/components/parameters/PhotoId" 
+    - $ref: "#/components/parameters/username"
     delete:
-      security:
-      - BearerAuth: []  
-      
       tags: ["Photo"]
-    
-      operationId: "Deletephoto"
-      summary: deleting a post
-      description: delete a post linked to the id of the user.
-      
-      parameters:
-      - $ref: "#/components/parameters/PhotoId" 
-      - $ref: "#/components/parameters/username"
-      
+      summary: deletePhoto - Deletes a previously uploaded photo.
+      operationId: deletePhoto
+      description: remove a photo from a users profile
       responses:
-        "204":
-          description: Photo deleted successfully.
-          
-          
-        "404":
-          description: Photo or username not found.
+        '200':
+          description: Photo successfully deleted
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-        
-        "500":
-          description: Internal Server Error - could be due to authentication issues or other server errors.
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
   
   #liking/unliking a photo
   /users/{username}/likes/{PhotoId}:
-    
+    parameters:
+    - $ref: "#/components/parameters/PhotoId" 
+    - $ref: "#/components/parameters/username"
+        
     put:
-      security:
-      - BearerAuth: [] 
-      
-      tags: ["like"]
-      operationId: "likephoto"
-      summary: add a like to a users post
+      tags: ["Photo interaction"]
+      summary: likePhoto - Marks a StreamPost as liked by the current user.
+      operationId: likePhoto
       description: increase the like counter by one under the post linked to the users id.
-      
-      parameters:
-        - $ref: "#/components/parameters/PhotoId" 
-        - $ref: "#/components/parameters/username"
-        
-        
       responses:
-        "200":
-          description: Photo liked. Like count updated.
+        '200':
+          description: Photo successfully liked
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Photo liked successfully."
-                    minLength: 3
-                    maxLength: 50
-                  likes:
-                    type: integer
-                    example: 101  # Example updated like count
-  
-        "404":
-          description: Photo not found or invalid username.
+                $ref: "#/components/schemas/EmptyResponse"
+        '400':
+          description: Incorrect request
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-        
-        "500":
-          description: Internal Server Error - could be due to authentication or processing issues.
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
   
 #unliking a photo
-  /users/{username}/unlikes/{PhotoId}:     
+  /users/{username}/unlikes/{PhotoId}:  
+    parameters:
+    - $ref: "#/components/parameters/PhotoId" 
+    - $ref: "#/components/parameters/username"
     delete:
-      security:
-      - BearerAuth: [] 
-      
-      tags: ["like"]
+      tags: ["Photo interaction"]
       operationId: unlikephoto 
       summary: remove a like to a users post
-      description: decrease the like counter by one under the post linked to the users id.
-      parameters:
-        - $ref: "#/components/parameters/PhotoId" 
-        - $ref: "#/components/parameters/username"
-        
-        
+      description: "decrease the like counter by one under the post linked to the users id."
       responses:
-        "204":
-          description: Photo unliked. Like count updated.
+        '200':
+          description: Photo successfully unliked
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                    example: "Photo unliked successfully."
-                  likes:
-                    type: integer
-                    example: 100  # Example updated like count
-
-        "400":
-          description: Photo or username not found.
+                $ref: "#/components/schemas/EmptyResponse"
+        '400':
+          description: Incorrect request
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-        
-        "404":
-          description: Photo wasn't previously liked.
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-        
-        "500":
-          description: Internal Server Error - could be due to authentication or processing issues.
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
   
   #commenting on a photo
   /users/{username}/comments/{PhotoId}:
-    
+    parameters:
+    - $ref: "#/components/parameters/PhotoId" 
+    - $ref: "#/components/parameters/username"
     post:
-      security:
-      - BearerAuth: [] 
-      
-      tags: ["comment"]
+      tags: ["Photo interaction"]
       operationId: "commentPhoto"
       summary: add a comment to a users post
       description: another user comments on a post
-      
-      parameters:
-        - $ref: "#/components/parameters/PhotoId" 
-        - $ref: "#/components/parameters/username"
-          
-      requestBody: 
-        content: 
-          application/json: 
+      requestBody:
+        description: The contents of the comment to be uploaded
+        content:
+          application/json:
             schema:
-              type: object
-              properties: 
-                commontext: 
-                  type: string
-                  minLength: 1
-                  maxLength: 600
+              $ref: "#/components/schemas/CommentContents"
       
       responses: 
-        "200": 
+        "201": 
           description: commented
           content:
             application/json:
               schema: { $ref: "#/components/schemas/comment"}
-        "404": 
-          description: bad request. user or post not found.
+        '401':
+          description: Action unauthorized - invalid user token
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-        "500": 
-          description: Internal Server Error - could be error of authentication 
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
    
   #uncommenting    
   /users/{username}/comments/{PhotoId}/{Commentid}:
-    
+    parameters:
+    - $ref: "#/components/parameters/PhotoId" 
+    - $ref: "#/components/parameters/username"
+    - $ref: "#/components/parameters/Commentid"
     delete:
-      security:
-      - BearerAuth: [] 
-      
-      tags: ["comment"]
+      tags: ["Photo interaction"]
       
       operationId: "uncommentPhoto"
       summary: remove a comment from a users post
       description: uncomment on a post
       
-      parameters:
-          - $ref: "#/components/parameters/PhotoId" 
-          - $ref: "#/components/parameters/username"
-          - $ref: "#/components/parameters/Commentid"
+      
           
       responses:
         "200":  
@@ -752,135 +291,102 @@ paths:
         "403":  
           description: Unauthorized - Only the author can delete the comment.
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
         "404":  
           description: Comment or post not found.
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
         "500": 
           description: Internal Server Error - could be error of authentication
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
   
   #follow a user
   /users/{username}/follow/{target_username}: 
-    
+    parameters:
+    - $ref: "#/components/parameters/target_username"
+    - $ref: "#/components/parameters/username"
     post:
-      security:
-      - BearerAuth: [] 
-      
-      tags: ["follow"]
+      tags: ["User interaction"]
       
       operationId: "followuser"
       summary: follow a user
       description: add this user to the list of users our user follows
-      
-      parameters:
-         - $ref: "#/components/parameters/target_username"
-         - $ref: "#/components/parameters/username"
-         
-      responses: 
-        "204": 
-          description: user followed successfully
-        "409":
-          description: user is already followed
+      responses:
+        '200':
+          description: User successfully followed
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-
-        
-        "400": 
-          description: Cannot follow yourself
+                $ref: "#/components/schemas/EmptyResponse"
+        '400':
+          description: Incorrect request
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-        "500": 
-          description: Internal Server Error - could be error of authentication 
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
           
-    
+  #get user list
+  /users:
+    get:
+      tags: ["User"]
+      summary: getUsers - Retrieves a list of all users registered in the database.
+      operationId: getUsers
+      
+      responses:
+        '200':
+          description: User list successfully retrieved
+          content: 
+            application/json: 
+              schema: 
+                type: array
+                minItems: 0
+                maxItems: 800
+                items: { $ref: "#/components/schemas/user" }
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"  
+ 
   #get user followers
   /users/{username}/followers/{target_username}: 
-    
+    parameters:
+    - $ref: "#/components/parameters/username"
+    - $ref: "#/components/parameters/target_username"
     get:
-      security:
-      - BearerAuth: [] 
-      
-      tags: ["followers"]
+     
+      tags: ["User interaction"]
           
       operationId: "getfollowers"
       summary: retrive followers 
       description: get a list of followers for this user id. 
       
-      parameters:
-           
-          - $ref: "#/components/parameters/username"
-          - $ref: "#/components/parameters/target_username"
           
       responses: 
         "200": 
@@ -895,68 +401,37 @@ paths:
         "401": 
           description: Unauthorized - Authentication failed or token expired
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
 
         "500": 
           description: Internal Server Error - could be error of authentication 
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string 
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
         "404": 
           description: user not found
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
   
   
   #get user following  
   /users/{username}/following/{target_username}:
+    parameters:
+    - $ref: "#/components/parameters/username"
+    - $ref: "#/components/parameters/target_username"
     
     get:
-      security:
-      - BearerAuth: [] 
-      
-      tags: ["following"]
+      tags: ["User interaction"]
           
       operationId: getfollowing
       summary: retrive followers 
       description: get a list of followers for this user id. 
       
-      parameters:
-           
-        - $ref: "#/components/parameters/username"
-        - $ref: "#/components/parameters/target_username"
       responses: 
         "200": 
           description: list of following
@@ -970,133 +445,73 @@ paths:
         "401": 
           description: Unauthorized - Authentication failed or token expired
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
         "500": 
           description: Internal Server Error - could be error of authentication
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
         "404": 
           description: user not found
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
+                    
    
   #remove a user from following
   /users/{username}/unfollow/{target_username}: 
+    parameters:
+    - $ref: "#/components/parameters/target_username"
+    - $ref: "#/components/parameters/username"
     
     delete:
-      security:
-      - BearerAuth: []
-      
-      tags: ["following"]
+      tags: ["User interaction"]
       
       operationId: unfollowuser
       summary: unfollow user
       description: Remove a user from the following list.
-      
-      parameters:
-         - $ref: "#/components/parameters/target_username"
-         - $ref: "#/components/parameters/username"
+    
          
       responses:
       
         "204":  
           description: unfollowed 
-        "400":
-         description: Bad request - The target user does not exist or invalid input
-         content:
-            application/json:  
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-
-        "401":
-         description: Unauthorized - Authentication failed or token expired
-         content:
-            application/json:  
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-        
-        "500": 
-          description: Internal Server Error - could be error of authentication
+        '400':
+          description: Incorrect request
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
   
  #ban a user
   /users/{username}/ban/{target_username}:
-    
+    parameters:
+    - $ref: "#/components/parameters/target_username"
+    - $ref: "#/components/parameters/username"
     put:
-      security:
-        - BearerAuth: []
-        
-      tags: ["ban"]
+      
+      tags: ["User interaction"]
         
       operationId: banUser
       summary: Ban a user
       description: Add this user to the list of banned users for the current user
-      parameters:
-         - $ref: "#/components/parameters/target_username"
-         - $ref: "#/components/parameters/username"
+      
       responses:
         "200":
           description: User banned successfully
@@ -1108,59 +523,33 @@ paths:
         "400":
           description: Bad request - Invalid input or target user not found
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
         "403":
           description: Forbidden - You cannot ban yourself
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
         "500":
           description: Internal Server Error - Could be an issue with authentication or server
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
 
  #Get banned a user
   /users/{username}/banned/{target_username}:
+    parameters:
+        - $ref: "#/components/parameters/target_username"
+        - $ref: "#/components/parameters/username"
     get: 
       operationId: getbannedusers
       summary: ban a user
-      tags: ["ban"]
+      tags: ["User interaction"]
       description: retrive a list of banned users
-      parameters:
-        - $ref: "#/components/parameters/target_username"
-        - $ref: "#/components/parameters/username"
+      
       responses: 
           "200": 
             description: list retrived
@@ -1174,104 +563,54 @@ paths:
   
 #unbanuser
   /users/{username}/unban/{target_username}: 
-    
+    parameters:
+    - $ref: "#/components/parameters/target_username"
+    - $ref: "#/components/parameters/username"
     delete:
-      security:
-      - BearerAuth: []
-      
-      tags: ["ban"]
+      tags: ["User interaction"]
       operationId: unbanuser
       summary: Unban a user
       description: Remove a user from the banned list.
-      
-      
-      parameters:
-         - $ref: "#/components/parameters/target_username"
-         - $ref: "#/components/parameters/username"
       responses:
-        "204":
+        '200':
           description: User successfully unbanned
-    
-        "400":
-          description: Bad request - Invalid input or malformed request
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-    
-        "401":
-          description: Unauthorized - Authentication failed or token expired
+                $ref: "#/components/schemas/EmptyResponse"
+        '400':
+          description: Incorrect request
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-    
-        "404":
-          description: User or target user not found
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-    
-        "500":
-          description: Internal Server Error - Could be an issue with authentication or server
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
   
 #get user profil
   /users/{username}/profile/{target_username}:
+    parameters:
+    - $ref: "#/components/parameters/target_username"
+    - $ref: "#/components/parameters/username"
     get:
-      security:
-      - BearerAuth: []
-      
-      tags: ["profil"]
+     
+      tags: ["User"]
       
       operationId: getuserprofil
       summary: Retrieve user profile
       description: retriev a users profile contaning all the info. 
       
-      parameters:
-         
-        - $ref: "#/components/parameters/target_username"
-        - $ref: "#/components/parameters/username"
+      
       responses: 
         "200": 
           description: profil retrived
@@ -1279,86 +618,41 @@ paths:
             application/json: 
               schema: { $ref: "#/components/schemas/profil" }
         
-        "400":
-          description: Bad request - Invalid input or malformed request
-          content:
-            application/json:  
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
       
         "401":
-          description: Unauthorized - Authentication failed or token expired
+          description: Action unauthorized - invalid user token
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
     
         "404":
           description: User or target user not found
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
     
         "500":
           description: Internal Server Error - Could be an issue with authentication or server
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
   
 #getstream
   /users/{username}/stream/{target_username}:
+    parameters:
+    - $ref: "#/components/parameters/target_username"
+    - $ref: "#/components/parameters/username"
     get:
-      security:
-      - BearerAuth: []
-      
-      tags: ["stream"]
+     
+      tags: ["User"]
       
       operationId: getmystream
       summary: Retrieve user stream
       description: retriev a users' profile contaning all the info. 
       
-      parameters:
-         
-         - $ref: "#/components/parameters/target_username"
-         - $ref: "#/components/parameters/username"
       responses: 
         "200": 
           description: photos retrived
@@ -1369,64 +663,281 @@ paths:
         "400":
            description: Bad request - Invalid input or malformed request
            content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
       
         "401":
           description: Unauthorized - Authentication failed or token expired
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
     
         "404":
           description: User or target user not found or mismatched
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
     
         "500":
           description: Internal Server Error - Could be an issue with authentication or server
           content:
-            application/json:  
+            application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
-                  message:
-                    type: string
-                    minLength: 3
-                    maxLength: 50
+                $ref: "#/components/schemas/EmptyResponse"
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: string
+
+  schemas:
+    
+    user:
+      title: "User"
+      description: "An object that represents a user of the application."
+      type: object
+      properties:
+        username:
+          description: "A username serving as a unique user ID"
+          type: string
+          pattern: '^.*?$'
+          minLength: 3
+          maxLength: 16
+          example: "rodi"
+  
+        profile:
+          description: "The profile of a user containing all the information about the user."
+          type: array
+          minItems: 0
+          maxItems: 800
+          items:
+            $ref: '#/components/schemas/profil'
+
+    UserToken:
+      description: A user session token
+      type: integer
+      example: 0987654321
+    
+   
+    post:
+      title: "Post"
+      description: "An object that represents a post displayed on the user's profile."
+      type: object
+      properties:
+        username:
+          description: "A username serving as a unique user ID"
+          type: string
+          pattern: '^.*?$'
+          minLength: 3
+          maxLength: 16
+          example: "rodi"
+    
+        PhotoId:
+          $ref: "#/components/schemas/PhotoId"
+ 
+                  
+        
+             
+    like:
+      title: "Like"
+      description: "An object containing a count of likes and a list of users who liked the image."
+      type: object
+      properties:
+        username:
+          description: "A username serving as a unique user ID"
+          type: string
+          pattern: '^.*?$'
+          minLength: 3
+          maxLength: 16
+          example: "rodi"
+    
+        likes:
+          type: array
+          description: "A list of usernames who liked the post."
+          items:
+            $ref: "#/components/schemas/user"
+    
+        like_count:
+          type: integer
+          description: "Total number of likes the picture has."
+          example: 8
+    
+        PhotoId:
+          $ref: "#/components/schemas/PhotoId"
+  
+    
+    CommentContents:
+      description: The text contents of a comment
+      type: string
+      example: "Such is life on Mars..."
+    
+    Timestamp:
+      description: UNIX date and time information
+      type: integer
+      example: 1707134325
+    
+    comment:
+      title: "Comment"
+      description: "Text that users leave on a post."
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/user"
+    
+        comment:
+          $ref: "#/components/schemas/CommentContents"
+    
+        comment_count:
+          type: integer
+          description: "Total number of comments left on the post."
+          example: 5
+    
+        PhotoId:
+          $ref: "#/components/schemas/PhotoId"
+    
+        date_time:  
+          $ref: "#/components/schemas/Timestamp"
+    
+    PhotoId:
+      description: ID of a photo
+      type: integer
+      example: 1928374650
+    
+    photo:
+      title: "Photo"
+      description: "An object that represents a photo displayed on the user's profile."
+      type: object
+      properties:
+        username:
+          $ref: "#/components/schemas/user"
+    
+        picture:
+          type: string
+          format: binary
+          description: "The image file to upload. Consider the encoding in the backend."
+          
+          minLength: 3
+          maxLength: 10485760  
+    
+        caption:
+          type: string
+          description: "Additional text associated with the picture."
+          minLength: 3
+          maxLength: 256  
+    
+        date_time:  
+          $ref: "#/components/schemas/Timestamp"
+    
+        likes:
+          description: "Reactions to the post."
+          type: array
+          minItems: 0
+          maxItems: 800
+          items:
+            $ref: '#/components/schemas/like'
+    
+        comments:
+          description: "Text left on a post by users."
+          type: array
+          minItems: 0
+          maxItems: 800
+          items:
+            $ref: '#/components/schemas/comment'
+
+    
+    
+    profil:
+      title: "Profile"
+      description: "An object that displays content and information from the user, such as the user’s photos, number of photos, followers, and following."
+      type: object
+      
+      properties:
+        username:
+          $ref: "#/components/schemas/user"
+    
+        profile_pic:
+          type: string
+          format: binary
+          description: "The image file to upload. Consider the encoding in the backend."
+          minLength: 3
+          maxLength: 10485760  
+    
+        stream:
+          description: "List of profiles of the people a user follows."
+          type: array
+          minItems: 0
+          maxItems: 800
+          items: 
+            $ref: '#/components/schemas/post'
+    
+        followers:
+          description: "The number of users that follow a certain account."
+          type: integer
+    
+        following:
+          description: "The number of users a certain account follows."
+          type: integer
+    
+        bans:  # Changed to plural for consistency
+          description: "The number of accounts a user has blocked."
+          type: integer
+      
+    EmptyResponse:
+      description: Returned when the respone is empty
+      type: object 
+
+
+    
+  parameters:
+    username:
+      name: username
+      in: path
+      required: true
+      description: "The name of the user"
+      schema:
+        description: "The name of the user"
+        type: string
+        example: "mimi"
+        minLength: 3
+        maxLength: 16
+
+    
+    target_username:
+      name: target_username
+      in: path
+      required: true
+      description: "The name of the target user"
+      schema:
+        description: "The name of the target user"
+        type: string
+        example: "mimi"
+        minLength: 3
+        maxLength: 16
+
+      
+    PhotoId:
+      name: PhotoId
+      in: path
+      required: true
+      description: "ID of the photo"
+      schema:
+        description: "ID of the photo"
+        type: integer
+        example: 5
+        readOnly: true
+
+    Commentid:
+      name: Commentid
+      in: path
+      required: true
+      description: "ID of the comment"
+      schema:
+        description: "ID of the comment"
+        type: integer
+        example: 7
+        readOnly: true
   

@@ -41,29 +41,54 @@ export default {
 <template>
     <div class="photo-container">
       <div class="photo-wrapper">
-        <img class="photo" :src="`data:image/png;base64,${params.Photo_png }`" :alt="`photo${params.PhotoId}`" @click="view">
-      </div>
-      <p class="caption">{{ params.Caption }}</p> <!-- Display the caption here -->
-      <div class="info-container">
-        <div class="info-left">
-          <p><b>{{ datestr }}</b></p>
+        <div v-for="photo in params.photodata" :key="photo.id">
+        
+        <img class="photo" :src="photo.png64" alt="User Photo" @click="view">
+    
+        <p class="caption">{{ photo.caption }}</p> <!-- Display the caption here -->
+        <div class="info-container">
+          <div class="info-left">
+            <p><b>{{ datestr }}</b></p>
          
-        </div>
+        
         <div class="info-right">
-          <p><b>Comments:</b> {{ params.Comment_count }}</p>
+          <p><b>Comments:</b> {{ photo.Comment_count }}</p>
            <!-- Post Comments component -->
-            <PostComments :params="params" />
+            <PostComments 
+            :params="{
+              PhotoId : photo.id,
+              Photo_png:photo.png64,
+              Caption:photo.caption,
+              Upload_time:photo.timestamp,
+              Comments:photo.comments,
+              Comment_count:photo.comment_count,
+              Like_count:photo.like_count,
+              Likes:photo.likes
+            }" />
 
             <!-- Delete Comments component -->
-            <DeleteComments :params="params" />
+            <DeleteComments 
+            :params="{
+              PhotoId : photo.id,
+              Photo_png:photo.png64,
+              Caption:photo.caption,
+              Upload_time:photo.timestamp,
+              Comments:photo.comments,
+              Comment_count:photo.comment_count,
+              Like_count:photo.like_count,
+              Likes:photo.likes
+            }"/>
 
-          <p><b>Likes:</b> {{ params.Like_count  }}</p>
-          <Likes :users="params.Likes" />
+          <p><b>Likes:</b> {{ photo.Like_count  }}</p>
+          <Likes :users="photo.Likes" />
           <button v-if="params.Author == $username.value" type="button" class="btn btn-delete" @click="remove">
             Delete
           </button>
         </div>
-      </div>
+        </div>
+    </div>
+  </div>
+   </div>
     </div>
   </template>
   

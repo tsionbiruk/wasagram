@@ -21,8 +21,8 @@ methods: {
         },
 
     refresh() {
-			for (let i = 0; i < this.$photo.value.Likes.length; i++) {
-				if (this.$username.value == this.$photo.value.Likes[i]) {
+			for (let i = 0; i < params.Likes.length; i++) {
+				if (this.$username.value == params.Likes[i]) {
 					this.islike = true;
 					break;
 				}
@@ -37,7 +37,7 @@ methods: {
         }
         this.$axios({
             method: 'put',
-            url: `/users/${this.$username.value}/like/${this.$photo.value.PhotoId}`,
+            url: `/users/${this.$username.value}/like/${params.PhotoId}`,
             headers: { Authorization: this.$token.value },
         })
         .then(response => {
@@ -57,7 +57,7 @@ methods: {
         }
         this.$axios({
             method: 'delete',
-            url: `/users/${this.$username.value}/unlike/${this.$photo.value.PhotoId}`,
+            url: `/users/${this.$username.value}/unlike/${params.PhotoId}`,
             headers: { Authorization: this.$token.value },
         })
         .then(response => {
@@ -95,7 +95,7 @@ methods: {
             </div>
 
             
-            <div v-for="like in this.$photo.value.Likes" :key="like">
+            <div v-for="like in params.Likes" :key="like">
             <likes :params="like" @changed="this.$emit('changed')"></likes>
             </div>
 

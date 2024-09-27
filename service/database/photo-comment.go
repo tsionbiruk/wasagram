@@ -239,3 +239,12 @@ func (db *wasabase) Getcomment(PhotoId int64) ([]CommentData, error) {
 	}
 	return comments, nil
 }
+
+func (db *wasabase) PhotoGet(photo_id int64) ([]byte, error) {
+	var photo []byte
+	err := db.c.QueryRow("SELECT photo_png FROM Photos WHERE PhotoId=?", photo_id).Scan(&photo)
+	if err != nil {
+		return nil, err
+	}
+	return photo, nil
+}

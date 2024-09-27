@@ -5,13 +5,22 @@ export default {
 		return {
 			isfollow: false,
 			isban: false,
-            isfollowing: false 
+            isfollowing: false ,
+            profilePhotoBase64: '',
 		}
 	},
 	created() {
 		this.refresh();
+        this.convertProfilePhotoToBase64();
 	},
 	methods: {
+        convertProfilePhotoToBase64() {
+			if (this.params.ProfilPhoto) {
+				// Assuming params.ProfilPhoto is in binary or can be converted to Base64
+				const binary = String.fromCharCode(...new Uint8Array(this.params.ProfilPhoto));
+				this.profilePhotoBase64 = btoa(binary); // Convert to Base64
+			}
+		},
 		refresh() {
 			if (!this.$token.value) {
 				return;
@@ -162,7 +171,7 @@ export default {
 <template>
 <div id="users-info" class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center" style="max-width: 1000px; background-color: rgb(212, 204, 188) ; border-radius: 10px; margin: 0 auto; margin-top: 20px; padding: 20px;">
     <div class="user-info d-flex align-items-center">
-        <img :src="`data:image/png;base64,${params.ProfilPhoto}`" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;">
+        <img :src="profilePhotoBase64" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;">
  
              
         <span>{{ params.username }}</span>
