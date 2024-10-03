@@ -77,14 +77,18 @@ func (rt *_router) UploadPhoto(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Write the JSON response
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 
 }
 
 func (rt *_router) Photolike(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	//target_username := ps.ByName("target_user")
+	// target_username := ps.ByName("target_user")
 	photo_id_str := ps.ByName("photoid")
 
 	if token := rt.Authorize(w, r, username); !token {
@@ -117,7 +121,11 @@ func (rt *_router) Photolike(w http.ResponseWriter, r *http.Request, ps httprout
 
 	// Write the JSON response
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) Photounlike(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
@@ -168,15 +176,18 @@ func (rt *_router) Photounlike(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Write the JSON response
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
-	//username of the persons post you want to delete
+	// username of the persons post you want to delete
 	username := ps.ByName("user")
 	photo_id_str := ps.ByName("photoid")
-	fmt.Print(photo_id_str)
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -213,7 +224,11 @@ func (rt *_router) DeletePost(w http.ResponseWriter, r *http.Request, ps httprou
 	}
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 
 }
 
@@ -233,5 +248,9 @@ func (rt *_router) getPhoto(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	_, _ = w.Write(photo)
+	if _, err := w.Write(photo); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }

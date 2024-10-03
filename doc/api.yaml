@@ -23,7 +23,7 @@ paths:
   /session:
     post:
       tags: ["User"]
-      summary: doLogin - Logs in the user.
+      summary: doLogin
       description: |
         If the user does not exist, a new user is created and its ID is
         returned. Otherwise, the ID of the existing user is returned.
@@ -59,7 +59,7 @@ paths:
   /users/{username}/username:
     parameters:
     - $ref: "#/components/parameters/username"
-    put:
+    post:
       tags: ["User"]
       summary: setMyUserName - Changes the username of the current user.
       operationId: setMyUserName
@@ -104,11 +104,11 @@ paths:
       requestBody:
         description: The photo to upload
         content:
-          image/png:
+          multipart/form-data:
             schema:
               $ref: "#/components/schemas/photo"
       responses:
-        '201':
+        '200':
           description: Photo successfully uploaded
           content:
             application/json:
@@ -126,7 +126,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmptyResponse"
-    
+  
+  /photos/{PhotoId}:
+    parameters:
+    - $ref: "#/components/parameters/PhotoId"
+    get:
+      tags: ["Photo"]
+      summary: getPhoto - Retrieves a photo by photo ID.
+      operationId: getPhoto
+      description: retrive a list of photos.
+      security: []
+      responses:
+        '200':
+          description: Photo successfully retrieved
+          content:
+            multipart/form-data:
+              schema:
+                $ref: "#/components/schemas/photo"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"  
   #delete post
   /users/{username}/photos/{PhotoId}:
     parameters:
@@ -136,6 +164,7 @@ paths:
       tags: ["Photo"]
       summary: deletePhoto - Deletes a previously uploaded photo.
       operationId: deletePhoto
+
       description: remove a photo from a users profile
       responses:
         '200':
@@ -158,7 +187,7 @@ paths:
                 $ref: "#/components/schemas/EmptyResponse"
   
   #liking/unliking a photo
-  /users/{username}/likes/{PhotoId}:
+  /users/{username}/photos/{PhotoId}/like:
     parameters:
     - $ref: "#/components/parameters/PhotoId" 
     - $ref: "#/components/parameters/username"
@@ -195,13 +224,13 @@ paths:
                 $ref: "#/components/schemas/EmptyResponse"
   
 #unliking a photo
-  /users/{username}/unlikes/{PhotoId}:  
+  /users/{username}/photos/{PhotoId}/unlike:  
     parameters:
     - $ref: "#/components/parameters/PhotoId" 
     - $ref: "#/components/parameters/username"
     delete:
       tags: ["Photo interaction"]
-      operationId: unlikephoto 
+      operationId: unlikePhoto 
       summary: remove a like to a users post
       description: "decrease the like counter by one under the post linked to the users id."
       responses:
@@ -231,13 +260,13 @@ paths:
                 $ref: "#/components/schemas/EmptyResponse"
   
   #commenting on a photo
-  /users/{username}/comments/{PhotoId}:
+  /users/{username}/photos/{PhotoId}/comment:
     parameters:
     - $ref: "#/components/parameters/PhotoId" 
     - $ref: "#/components/parameters/username"
     post:
       tags: ["Photo interaction"]
-      operationId: "commentPhoto"
+      operationId: commentPhoto
       summary: add a comment to a users post
       description: another user comments on a post
       requestBody:
@@ -248,7 +277,7 @@ paths:
               $ref: "#/components/schemas/CommentContents"
       
       responses: 
-        "201": 
+        "200": 
           description: commented
           content:
             application/json:
@@ -267,7 +296,7 @@ paths:
                 $ref: "#/components/schemas/EmptyResponse"
    
   #uncommenting    
-  /users/{username}/comments/{PhotoId}/{Commentid}:
+  /users/{username}/photos/{PhotoId}/comment/{Commentid}:
     parameters:
     - $ref: "#/components/parameters/PhotoId" 
     - $ref: "#/components/parameters/username"
@@ -275,7 +304,7 @@ paths:
     delete:
       tags: ["Photo interaction"]
       
-      operationId: "uncommentPhoto"
+      operationId: uncommentPhoto
       summary: remove a comment from a users post
       description: uncomment on a post
       
@@ -307,15 +336,48 @@ paths:
               schema:
                 $ref: "#/components/schemas/EmptyResponse"
   
-  #follow a user
-  /users/{username}/follow/{target_username}: 
+          
+  #get user list
+  /users:
+    get:
+      tags: ["User"]
+      summary: getUsers - Retrieves a list of all users registered in the database.
+      operationId: getUsers
+      description: retrive a list of users.
+      
+      responses:
+        '200':
+          description: User list successfully retrieved
+          content: 
+            application/json: 
+              schema: 
+                type: array
+                minItems: 0
+                maxItems: 800
+                items: { $ref: "#/components/schemas/user" }
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"  
+ 
+  #follow/ get followers
+  
+  /users/{username}/follows: 
     parameters:
-    - $ref: "#/components/parameters/target_username"
     - $ref: "#/components/parameters/username"
-    post:
+    
+    put:
       tags: ["User interaction"]
       
-      operationId: "followuser"
+      operationId: followUser
       summary: follow a user
       description: add this user to the list of users our user follows
       responses:
@@ -343,47 +405,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmptyResponse"
-          
-  #get user list
-  /users:
-    get:
-      tags: ["User"]
-      summary: getUsers - Retrieves a list of all users registered in the database.
-      operationId: getUsers
-      
-      responses:
-        '200':
-          description: User list successfully retrieved
-          content: 
-            application/json: 
-              schema: 
-                type: array
-                minItems: 0
-                maxItems: 800
-                items: { $ref: "#/components/schemas/user" }
-        '401':
-          description: Action unauthorized - invalid user token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EmptyResponse"
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EmptyResponse"  
- 
-  #get user followers
-  /users/{username}/followers/{target_username}: 
-    parameters:
-    - $ref: "#/components/parameters/username"
-    - $ref: "#/components/parameters/target_username"
+                
     get:
      
       tags: ["User interaction"]
           
-      operationId: "getfollowers"
+      operationId: getfollowers
       summary: retrive followers 
       description: get a list of followers for this user id. 
       
@@ -419,8 +446,8 @@ paths:
                 $ref: "#/components/schemas/EmptyResponse"
   
   
-  #get user following  
-  /users/{username}/following/{target_username}:
+  #get following/ unfollow
+  /users/{username}/follows/{target_username}:
     parameters:
     - $ref: "#/components/parameters/username"
     - $ref: "#/components/parameters/target_username"
@@ -429,8 +456,8 @@ paths:
       tags: ["User interaction"]
           
       operationId: getfollowing
-      summary: retrive followers 
-      description: get a list of followers for this user id. 
+      summary: retrive following
+      description: get a list of users that this user follows. 
       
       responses: 
         "200": 
@@ -460,18 +487,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmptyResponse"
-                    
-   
-  #remove a user from following
-  /users/{username}/unfollow/{target_username}: 
-    parameters:
-    - $ref: "#/components/parameters/target_username"
-    - $ref: "#/components/parameters/username"
+                
     
     delete:
       tags: ["User interaction"]
       
-      operationId: unfollowuser
+      operationId: unfollowUser
       summary: unfollow user
       description: Remove a user from the following list.
     
@@ -498,9 +519,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmptyResponse"
+                    
+   
+
   
- #ban a user
-  /users/{username}/ban/{target_username}:
+ #ban/unban/getbanned 
+  /users/{username}/bans/{target_username}:
     parameters:
     - $ref: "#/components/parameters/target_username"
     - $ref: "#/components/parameters/username"
@@ -513,13 +537,9 @@ paths:
       description: Add this user to the list of banned users for the current user
       
       responses:
-        "200":
+        "204":
           description: User banned successfully
-          links:
-            removeFollower:
-              operationId: removeUser
-              parameters:
-                Userid_1: $request.path.target_username
+          
         "400":
           description: Bad request - Invalid input or target user not found
           content:
@@ -538,37 +558,10 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmptyResponse"
-
- #Get banned a user
-  /users/{username}/banned/{target_username}:
-    parameters:
-        - $ref: "#/components/parameters/target_username"
-        - $ref: "#/components/parameters/username"
-    get: 
-      operationId: getbannedusers
-      summary: ban a user
-      tags: ["User interaction"]
-      description: retrive a list of banned users
-      
-      responses: 
-          "200": 
-            description: list retrived
-            content:
-              application/json:
-                schema: 
-                  type: array
-                  minItems: 0
-                  maxItems: 800
-                  items: { $ref: "#/components/schemas/user" }
-  
-#unbanuser
-  /users/{username}/unban/{target_username}: 
-    parameters:
-    - $ref: "#/components/parameters/target_username"
-    - $ref: "#/components/parameters/username"
+    
     delete:
       tags: ["User interaction"]
-      operationId: unbanuser
+      operationId: unbanUser
       summary: Unban a user
       description: Remove a user from the banned list.
       responses:
@@ -596,9 +589,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EmptyResponse"
+                
+                
+                
+    get: 
+      operationId: getbannedusers
+      summary: get banned users
+      tags: ["User interaction"]
+      description: retrive a list of banned users
+      
+      responses: 
+          "200": 
+            description: list retrived
+            content:
+              application/json:
+                schema: 
+                  type: array
+                  minItems: 0
+                  maxItems: 800
+                  items: { $ref: "#/components/schemas/user" }
+
+  
   
 #get user profil
-  /users/{username}/profile/{target_username}:
+  /users/{username}/user/{target_username}/profile:
     parameters:
     - $ref: "#/components/parameters/target_username"
     - $ref: "#/components/parameters/username"
@@ -606,7 +620,7 @@ paths:
      
       tags: ["User"]
       
-      operationId: getuserprofil
+      operationId: getUserProfile
       summary: Retrieve user profile
       description: retriev a users profile contaning all the info. 
       
@@ -649,7 +663,7 @@ paths:
      
       tags: ["User"]
       
-      operationId: getmystream
+      operationId: getMyStream
       summary: Retrieve user stream
       description: retriev a users' profile contaning all the info. 
       
@@ -693,12 +707,13 @@ components:
       type: http
       scheme: bearer
       bearerFormat: string
+      description: "Use a Bearer token for authentication. Obtain your token from the authentication endpoint."
 
   schemas:
     
     user:
       title: "User"
-      description: "An object that represents a user of the application."
+      description: An object that represents a user of the application.
       type: object
       properties:
         username:
@@ -709,13 +724,7 @@ components:
           maxLength: 16
           example: "rodi"
   
-        profile:
-          description: "The profile of a user containing all the information about the user."
-          type: array
-          minItems: 0
-          maxItems: 800
-          items:
-            $ref: '#/components/schemas/profil'
+        
 
     UserToken:
       description: A user session token
@@ -725,7 +734,7 @@ components:
    
     post:
       title: "Post"
-      description: "An object that represents a post displayed on the user's profile."
+      description: An object that represents a post displayed on the user's profile.
       type: object
       properties:
         username:
@@ -737,6 +746,7 @@ components:
           example: "rodi"
     
         PhotoId:
+          
           $ref: "#/components/schemas/PhotoId"
  
                   
@@ -744,7 +754,7 @@ components:
              
     like:
       title: "Like"
-      description: "An object containing a count of likes and a list of users who liked the image."
+      description: An object containing a count of likes and a list of users who liked the image.
       type: object
       properties:
         username:
@@ -758,6 +768,8 @@ components:
         likes:
           type: array
           description: "A list of usernames who liked the post."
+          minItems: 0
+          maxItems: 800
           items:
             $ref: "#/components/schemas/user"
     
@@ -767,13 +779,17 @@ components:
           example: 8
     
         PhotoId:
+          
           $ref: "#/components/schemas/PhotoId"
   
     
     CommentContents:
       description: The text contents of a comment
       type: string
-      example: "Such is life on Mars..."
+      pattern: '^.*?$'
+      example: "i love dogs.."
+      minLength: 1
+      maxLength: 256 
     
     Timestamp:
       description: UNIX date and time information
@@ -782,13 +798,15 @@ components:
     
     comment:
       title: "Comment"
-      description: "Text that users leave on a post."
+      description: Text that users leave on a post.
       type: object
       properties:
         user:
+          
           $ref: "#/components/schemas/user"
     
-        comment:
+        comments_text:
+         
           $ref: "#/components/schemas/CommentContents"
     
         comment_count:
@@ -797,9 +815,11 @@ components:
           example: 5
     
         PhotoId:
+          
           $ref: "#/components/schemas/PhotoId"
     
-        date_time:  
+        date_time: 
+          
           $ref: "#/components/schemas/Timestamp"
     
     PhotoId:
@@ -809,14 +829,16 @@ components:
     
     photo:
       title: "Photo"
-      description: "An object that represents a photo displayed on the user's profile."
+      description: An object that represents a photo displayed on the user's profile.
       type: object
       properties:
         username:
+          
           $ref: "#/components/schemas/user"
     
         picture:
           type: string
+          
           format: binary
           description: "The image file to upload. Consider the encoding in the backend."
           
@@ -825,11 +847,13 @@ components:
     
         caption:
           type: string
+          pattern: '^.*?$'
           description: "Additional text associated with the picture."
           minLength: 3
           maxLength: 256  
     
-        date_time:  
+        date_time: 
+          
           $ref: "#/components/schemas/Timestamp"
     
         likes:
@@ -851,16 +875,18 @@ components:
     
     
     profil:
-      title: "Profile"
+      title: "Profil"
       description: "An object that displays content and information from the user, such as the user’s photos, number of photos, followers, and following."
       type: object
       
       properties:
         username:
+         
           $ref: "#/components/schemas/user"
     
         profile_pic:
           type: string
+          
           format: binary
           description: "The image file to upload. Consider the encoding in the backend."
           minLength: 3
@@ -901,6 +927,7 @@ components:
       schema:
         description: "The name of the user"
         type: string
+        pattern: '^.*?$'
         example: "mimi"
         minLength: 3
         maxLength: 16
@@ -914,6 +941,7 @@ components:
       schema:
         description: "The name of the target user"
         type: string
+        pattern: '^.*?$'
         example: "mimi"
         minLength: 3
         maxLength: 16
@@ -940,4 +968,3 @@ components:
         type: integer
         example: 7
         readOnly: true
-  

@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
@@ -57,7 +58,7 @@ func (db *wasabase) Creatuser_Getuserfromtoken(username string) (int, error) {
 		}
 	}
 
-	//if user exists we skip the user incertion and jump here.
+	// if user exists we skip the user incertion and jump here.
 	token := db.tokenGen.GenerateUniqueToken(username)
 	currentTime := time.Now().Format("15:04:05")
 
@@ -78,7 +79,7 @@ func (db *wasabase) Gettoken(username string) (int64, error) {
 	var token int64
 	err := db.c.QueryRow("SELECT Token FROM Tokens WHERE username=?", username).Scan(&token)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			// Handle the case where no rows are found
 			// For example, you might want to return a specific value or nil
 			return 0, nil // Return 0 or another appropriate value indicating no result
@@ -93,7 +94,7 @@ func (db *wasabase) Gettokentime(username string, token int64) (time.Time, error
 	var timeString string
 	err := db.c.QueryRow("SELECT time FROM Tokens WHERE username=? AND Token=?", username, token).Scan(&timeString)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return time.Time{}, nil // No result found
 		}
 		return time.Time{}, fmt.Errorf("failed to query time: %w", err)

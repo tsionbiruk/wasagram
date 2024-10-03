@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 )
 
 func (db *wasabase) GetStream(username string, requester string) ([]photo, []string, error) {
@@ -31,7 +32,10 @@ func (db *wasabase) GetStream(username string, requester string) ([]photo, []str
 		}
 		banned = append(banned, users)
 	}
-	fmt.Print(requester)
+
+	if err := rows.Err(); err != nil {
+		return nil, nil, fmt.Errorf("error during row iteration: %w", err)
+	}
 
 	for _, v := range banned {
 
@@ -80,7 +84,7 @@ func (db *wasabase) GetStream(username string, requester string) ([]photo, []str
 			// Count the number of comments
 			err = db.c.QueryRow("SELECT COUNT(*) FROM Comments WHERE PhotoId=?", p.PhotoId).Scan(&p.Comment_count)
 			if err != nil {
-				fmt.Println("Error executing comment count query:", err)
+				log.Println("Error executing comment count query:", err)
 			}
 
 			// Fetch all comments for the photo
@@ -105,11 +109,11 @@ func (db *wasabase) GetStream(username string, requester string) ([]photo, []str
 			}
 
 			p.Comments = Comments
-			fmt.Print(Comments)
+
 			// Count the number of likes
 			err = db.c.QueryRow("SELECT COUNT(*) FROM Likes WHERE PhotoId=?", p.PhotoId).Scan(&p.Like_count)
 			if err != nil {
-				fmt.Println("Error executing like count query:", err)
+				log.Print("Error executing like count query:", err)
 			}
 
 			// Fetch all users who liked the photo

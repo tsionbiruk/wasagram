@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 
 	"fmt"
 )
@@ -60,10 +61,10 @@ func (db *wasabase) FollowUser(username string, target_username string) (string,
 	if username != target_username {
 		var exists bool
 		err := db.c.QueryRow("SELECT 1 FROM Followes WHERE username=? AND target_username=?", username, target_username).Scan(&exists)
-		if err == nil {
+		if errors.Is(err, nil) {
 
 			return "", fmt.Errorf("user %s already follows %s", username, target_username)
-		} else if err != sql.ErrNoRows {
+		} else if !errors.Is(err, sql.ErrNoRows) {
 
 			return "", fmt.Errorf("failed to check following status: %w", err)
 		}

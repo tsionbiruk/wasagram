@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+	"errors"
+	"log"
 
 	"fmt"
 )
@@ -122,7 +124,9 @@ func (db *wasabase) UserProfile(username string, requester string) (*UserProfile
 		}
 		banned = append(banned, users)
 	}
-	fmt.Print(requester)
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error during row iteration: %w", err)
+	}
 
 	for _, v := range banned {
 
@@ -139,7 +143,7 @@ func (db *wasabase) UserProfile(username string, requester string) (*UserProfile
 	err = db.c.QueryRow("SELECT profil_pic FROM Users WHERE username = ?", username).Scan(&userProfile.ProfilPic)
 
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("no user found with username: %s", username)
 		}
 		return nil, fmt.Errorf("failed to query user profile: %w", err)
@@ -148,27 +152,24 @@ func (db *wasabase) UserProfile(username string, requester string) (*UserProfile
 	err = db.c.QueryRow("SELECT COUNT(*) FROM Followes WHERE target_username=?", username).Scan(&userProfile.Follower_count)
 
 	if err != nil {
-		fmt.Println("Error executing query:", err)
+		log.Print("Error executing query:", err)
 
 	}
-	fmt.Print(userProfile.Follower_count)
 
 	err = db.c.QueryRow("SELECT COUNT(*) FROM Followes WHERE username=?", username).Scan(&userProfile.Following_count)
 
 	if err != nil {
-		fmt.Println("Error executing query:", err)
+		log.Print("Error executing query:", err)
 
 	}
-	fmt.Print(userProfile.Following_count)
 
 	err = db.c.QueryRow("SELECT COUNT(*) FROM Bans WHERE username=?", username).Scan(&userProfile.Banned_count)
 
 	if err != nil {
-		fmt.Println("Error executing query:", err)
+		log.Print("Error executing query:", err)
 	}
-	fmt.Print(userProfile.Banned_count)
 
-	//get photos
+	// get photos
 	photos := []photo{}
 	rows, err = db.c.Query("SELECT photoId,photo_png,caption,upload_time FROM Photos WHERE username =? ORDER BY upload_time DESC", username)
 	if err != nil {
@@ -187,7 +188,7 @@ func (db *wasabase) UserProfile(username string, requester string) (*UserProfile
 		err = db.c.QueryRow("SELECT COUNT(*) FROM Comments WHERE PhotoId=?", p.PhotoId).Scan(&p.Comment_count)
 
 		if err != nil {
-			fmt.Println("Error executing query:", err)
+			log.Print("Error executing query:", err)
 		}
 
 		Comments := []CommentData{}
@@ -210,14 +211,13 @@ func (db *wasabase) UserProfile(username string, requester string) (*UserProfile
 			return nil, fmt.Errorf("error during comment row iteration: %w", err)
 		}
 		p.Comments = Comments
-		fmt.Print(Comments)
 
 		likes := []string{}
 
 		err = db.c.QueryRow("SELECT COUNT(*) FROM Likes WHERE PhotoId=?", p.PhotoId).Scan(&p.Like_count)
 
 		if err != nil {
-			fmt.Println("Error executing query:", err)
+			log.Print("Error executing query:", err)
 		}
 		likeRows, err := db.c.Query("SELECT username FROM Likes WHERE photoId = ?", p.PhotoId)
 		if err != nil {
@@ -236,7 +236,7 @@ func (db *wasabase) UserProfile(username string, requester string) (*UserProfile
 
 		}
 
-		if err = rows.Err(); err != nil {
+		if err = likeRows.Err(); err != nil {
 			return nil, err
 		}
 		p.Likes = likes

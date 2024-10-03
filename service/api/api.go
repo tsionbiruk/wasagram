@@ -113,7 +113,7 @@ func (rt *_router) Authorize(w http.ResponseWriter, r *http.Request, username st
 
 	token, err := strconv.ParseInt(tokenString, 10, 64)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to parse photo ID: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to parse photo ID: %v", err.Error()), http.StatusInternalServerError)
 		return false
 	}
 	// Validate the token by querying into the db
@@ -121,7 +121,7 @@ func (rt *_router) Authorize(w http.ResponseWriter, r *http.Request, username st
 	var user_token int64
 	user_token, err = rt.db.Gettoken(username)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("User doesnt exist in Tokens table please log back in to get a token: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("User doesnt exist in Tokens table please log back in to get a token: %v", err.Error()), http.StatusInternalServerError)
 		return false
 	}
 	if token != user_token {
@@ -132,7 +132,7 @@ func (rt *_router) Authorize(w http.ResponseWriter, r *http.Request, username st
 	var tokentime time.Time
 	tokentime, err = rt.db.Gettokentime(username, token)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("unable to get token time please log back in to get a token time: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("unable to get token time please log back in to get a token time: %v", err.Error()), http.StatusInternalServerError)
 		return false
 	}
 

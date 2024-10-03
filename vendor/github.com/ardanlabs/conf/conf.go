@@ -45,7 +45,7 @@ type Version struct {
 // for any information to be provided to the user.
 func ParseOSArgs(prefix string, cfg interface{}) (string, error) {
 	err := Parse(os.Args[1:], prefix, cfg)
-	if err == nil {
+	if errors.Is(err, nil) {
 		return "", nil
 	}
 

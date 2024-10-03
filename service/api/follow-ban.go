@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -12,13 +13,23 @@ import (
 func (rt *_router) Followuser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("targetuser")
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to read POST request body: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	var target_username string
+
+	err = json.Unmarshal(body, &target_username)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to unmarshal username from POST request body: %s", err.Error()), http.StatusBadRequest)
+		return
+	}
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
 	}
-
-	fmt.Print(target_username)
 
 	if username == target_username {
 		response := map[string]string{
@@ -33,11 +44,15 @@ func (rt *_router) Followuser(w http.ResponseWriter, r *http.Request, ps httprou
 
 		// Write the response
 		w.WriteHeader(http.StatusOK)
-		w.Write(responseData)
+		if _, err := w.Write(responseData); err != nil {
+			// Handle the error
+			http.Error(w, "Failed to write response", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
-	_, err := rt.db.FollowUser(username, target_username)
+	_, err = rt.db.FollowUser(username, target_username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to follow target: %s", err.Error()), http.StatusInternalServerError)
 		return
@@ -56,7 +71,11 @@ func (rt *_router) Followuser(w http.ResponseWriter, r *http.Request, ps httprou
 
 	// Write the response
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) Unfollowuser(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
@@ -88,7 +107,11 @@ func (rt *_router) Unfollowuser(w http.ResponseWriter, r *http.Request, ps httpr
 
 	// Write the response
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
@@ -123,7 +146,11 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 
 		// Write the response
 		w.WriteHeader(http.StatusBadRequest) // 400 status code for invalid request
-		w.Write(responseData)
+		if _, err := w.Write(responseData); err != nil {
+			// Handle the error
+			http.Error(w, "Failed to write response", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
@@ -140,7 +167,11 @@ func (rt *_router) Ban(w http.ResponseWriter, r *http.Request, ps httprouter.Par
 
 	// Write the response
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
@@ -164,7 +195,11 @@ func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 		// Write the response
 		w.WriteHeader(http.StatusOK)
-		w.Write(responseData)
+		if _, err := w.Write(responseData); err != nil {
+			// Handle the error
+			http.Error(w, "Failed to write response", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
@@ -188,13 +223,29 @@ func (rt *_router) Unban(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 	// Write the response
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
 	username := ps.ByName("user")
-	target_username := ps.ByName("targetuser")
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to read POST request body: %s", err.Error()), http.StatusInternalServerError)
+		return
+	}
+
+	var target_username string
+
+	err = json.Unmarshal(body, &target_username)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to unmarshal username from POST request body: %s", err.Error()), http.StatusBadRequest)
+		return
+	}
 
 	if token := rt.Authorize(w, r, username); !token {
 		return
@@ -211,7 +262,11 @@ func (rt *_router) GetFollowers(w http.ResponseWriter, r *http.Request, ps httpr
 		http.Error(w, fmt.Sprintf("Failed to marshal followed users: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write([]byte(jsonstr))
+	if _, err := w.Write([]byte(jsonstr)); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) Getfollowing(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
@@ -234,7 +289,11 @@ func (rt *_router) Getfollowing(w http.ResponseWriter, r *http.Request, ps httpr
 		http.Error(w, fmt.Sprintf("Failed to marshal followed users: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write([]byte(jsonstr))
+	if _, err := w.Write([]byte(jsonstr)); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
@@ -246,7 +305,6 @@ func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
-	fmt.Print(target_username)
 	banned, err := rt.db.Getbannedusers(target_username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get banned users: %s", err.Error()), http.StatusInternalServerError)
@@ -258,5 +316,9 @@ func (rt *_router) GetBanned(w http.ResponseWriter, r *http.Request, ps httprout
 		http.Error(w, fmt.Sprintf("Failed to marshal followed users: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write([]byte(jsonstr))
+	if _, err := w.Write([]byte(jsonstr)); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }

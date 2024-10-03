@@ -59,7 +59,7 @@ type AppDatabase interface {
 	Getfollowers(username string) ([]string, error)
 	Getbannedusers(username string) ([]string, error)
 
-	//other users
+	// other users
 
 	UserProfile(username string, requester string) (*UserProfileInfo, error)
 	GetStream(username string, requester string) ([]photo, []string, error)

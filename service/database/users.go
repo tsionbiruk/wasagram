@@ -2,7 +2,7 @@ package database
 
 import "fmt"
 
-//usercreation is in the tokens file.
+// usercreation is in the tokens file.
 
 func (db *wasabase) UpdateUserName(username string, newusername string) error {
 	// Check if the new username already exists

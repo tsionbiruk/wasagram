@@ -32,7 +32,11 @@ func (rt *_router) GetProfile(w http.ResponseWriter, r *http.Request, ps httprou
 		return
 	}
 
-	_, _ = w.Write(jsonstr)
+	if _, err := w.Write([]byte(jsonstr)); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprouter.Params, _ reqcontext.RequestContext) {
@@ -63,7 +67,11 @@ func (rt *_router) GetStream(w http.ResponseWriter, r *http.Request, ps httprout
 	}
 
 	// Write the JSON response
-	_, _ = w.Write(jsonResponse)
+	if _, err := w.Write(jsonResponse); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 
 }
 
@@ -116,7 +124,11 @@ func (rt *_router) Rename(w http.ResponseWriter, r *http.Request, ps httprouter.
 
 	// Write the response
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 
 }
 
@@ -134,7 +146,11 @@ func (rt *_router) GetUsers(w http.ResponseWriter, _ *http.Request, _ httprouter
 		http.Error(w, fmt.Sprintf("Failed to marshal users array: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write(jsonstr)
+	if _, err := w.Write(jsonstr); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) DoLogin(w http.ResponseWriter, r *http.Request, _ httprouter.Params, _ reqcontext.RequestContext) {
@@ -164,8 +180,8 @@ func (rt *_router) DoLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 		http.Error(w, fmt.Sprintf("Failed to either retrieve or create user: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	fmt.Print(token)
-	//MARSHAL THETOKEN NOT THE USERNAME
+
+	// MARSHAL THETOKEN NOT THE USERNAME
 
 	jsonstr, err := json.Marshal(token)
 	if err != nil {
@@ -174,5 +190,9 @@ func (rt *_router) DoLogin(w http.ResponseWriter, r *http.Request, _ httprouter.
 	}
 
 	// Write the JSON response
-	w.Write(jsonstr)
+	if _, err := w.Write(jsonstr); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }

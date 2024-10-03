@@ -22,45 +22,49 @@ func (rt *_router) PostComments(w http.ResponseWriter, r *http.Request, ps httpr
 
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to read POST request body: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to read POST request body: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	var text string
 	err = json.Unmarshal(body, &text)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to unmarshal comment from POST request body: %s", err.Error()), http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Failed to unmarshal comment from POST request body: %v", err.Error()), http.StatusBadRequest)
 		return
 	}
 
 	PhotoId, err := strconv.ParseInt(photo_id_str, 10, 64)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to parse photo ID: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to parse photo ID: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	err = rt.db.Comment(username, PhotoId, text)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to post comment: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to post comment: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 	// Retrieve comments
 	comments, err := rt.db.Getcomment(PhotoId)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to retrieve comments: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to retrieve comments: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	// Marshal comments to JSON
 	responseData, err := json.Marshal(comments)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to marshal comments to JSON: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to marshal comments to JSON: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	// Write the response
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
@@ -74,19 +78,19 @@ func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps htt
 
 	PhotoId, err := strconv.ParseInt(photo_id_str, 10, 64)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to parse photo ID: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to parse photo ID: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 	comment_id_str := ps.ByName("commentid")
 	CommentId, err := strconv.ParseInt(comment_id_str, 10, 64)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to parse comment ID: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to parse comment ID: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 	var og_commenter []string
 	og_commenter, err = rt.db.GetAuthorcommenter(PhotoId)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to post comment: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to post comment: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
@@ -96,7 +100,7 @@ func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps htt
 		if v == username {
 			err = rt.db.Uncomment(CommentId)
 			if err != nil {
-				http.Error(w, fmt.Sprintf("Failed to unlike the photo, can't unlike what you didn't like: %s", err.Error()), http.StatusInternalServerError)
+				http.Error(w, fmt.Sprintf("Failed to unlike the photo, can't unlike what you didn't like: %v", err.Error()), http.StatusInternalServerError)
 				return
 			}
 			found = true // Mark that username was found
@@ -112,18 +116,22 @@ func (rt *_router) DeleteComments(w http.ResponseWriter, r *http.Request, ps htt
 	// Retrieve comments
 	comments, err := rt.db.Getcomment(PhotoId)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to retrieve comments: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to retrieve comments: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	// Marshal comments to JSON
 	responseData, err := json.Marshal(comments)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to marshal comments to JSON: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to marshal comments to JSON: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 
 	// Write the response
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseData)
+	if _, err := w.Write(responseData); err != nil {
+		// Handle the error
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
