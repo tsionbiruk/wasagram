@@ -1,5 +1,5 @@
 <script>
-import deleteComments from 'webui/src/components/delete_comments.vue'; 
+import deleteComments from '../components/delete_comments.vue'; 
 export default {
 	components: {
     deleteComments,  // Register PostComments component

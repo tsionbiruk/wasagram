@@ -1,7 +1,7 @@
 <script>
-import PostComments from 'webui/src/components/post_comments.vue'; // Adjust the path to your component
-import DeleteComments from 'webui/src/components/delete_comments.vue'; // Adjust the path to your component
-import Likes from 'webui/src/components/like_unlike.vue';  // Import the Likes component
+import PostComments from '../components/post_comments.vue'; // Adjust the path to your component
+import DeleteComments from '../components/delete_comments.vue'; // Adjust the path to your component
+import Likes from '../components/like_unlike.vue';  // Import the Likes component
 
 export default {
     components: {
