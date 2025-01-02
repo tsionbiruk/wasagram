@@ -1,0 +1,724 @@
+openapi: 3.0.3
+info:
+  title: WASAPhoto
+  description: API documentation for the WasaPhoto project.
+  version: 1.0.0
+security:
+  - BearerAuth: []
+tags:
+  - name: "User"
+    description: "Endpoints for user actions"
+  - name: "User interaction"
+    description: "Endpoints for interactions between users"
+  - name: "Photo"
+    description: "Endpoints for users' own photo actions"
+  - name: "Photo interaction"
+    description: "Endpoints for interactions with other users' photos"
+
+paths:
+  /session:
+    post:
+      tags: ["User"]
+      summary: doLogin - Logs in the user.
+      description: |
+        If the user does not exist, a new user is created and its ID is
+        returned. Otherwise, the ID of the existing user is returned.
+      operationId: doLogin
+      requestBody:
+        description: User details
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserName"
+      responses:
+        '200':
+          description: User log-in successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserToken"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/username:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    post:
+      tags: ["User"]
+      summary: setMyUserName - Changes the username of the current user.
+      operationId: setMyUserName
+      requestBody:
+        description: Request details
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserName"
+      responses:
+        '200':
+          description: Username change successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/stream:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    get:
+      tags: ["User"]
+      summary: getMyStream - Retrieves information necessary to compose the main page stream for the current user.
+      operationId: getMyStream
+      responses:
+        '200':
+          description: Stream successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamPost"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/profile:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    get:
+      tags: ["User"]
+      summary: getUserProfile - Retrieves information necessary to compose the user page for the current user.
+      operationId: getUserProfile
+      responses:
+        '200':
+          description: Profile successfully retrieved
+          content:
+            application/json:
+              schema:
+                description: User profile information
+                type: object
+                properties:
+                  photos:
+                    $ref: "#/components/schemas/StreamPostList"
+                  followers:
+                    $ref: "#/components/schemas/UserList"
+                  following:
+                    $ref: "#/components/schemas/UserList"
+                  banned:
+                    $ref: "#/components/schemas/UserList"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users:
+    get:
+      tags: ["User"]
+      summary: getUsers - Retrieves a list of all users registered in the database.
+      operationId: getUsers
+      security: []
+      responses:
+        '200':
+          description: User list successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/banned/{targetUser}:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    - $ref: "#/components/parameters/TargetUser"
+    put:
+      tags: ["User interaction"]
+      summary: banUser - Marks a user as banned by the current user.
+      operationId: banUser
+      responses:
+        '200':
+          description: User successfully banned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '400':
+          description: Incorrect request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+    delete:
+      tags: ["User interaction"]
+      summary: unbanUser - Unbans a user previously banned by the current user.
+      operationId: unbanUser
+      responses:
+        '200':
+          description: User successfully unbanned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '400':
+          description: Incorrect request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/banned:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    get:
+      tags: ["User interaction"]
+      summary: getBanned - Retrieves a list of users banned by the current user.
+      operationId: getBanned
+      responses:
+        '200':
+          description: Banned list successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+
+  /users/{user}/followed/{targetUser}:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    - $ref: "#/components/parameters/TargetUser"
+    put:
+      tags: ["User interaction"]
+      summary: followUser - Marks a user as followed by the current user.
+      operationId: followUser
+      responses:
+        '200':
+          description: User successfully followed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '400':
+          description: Incorrect request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+    delete:
+      tags: ["User interaction"]
+      summary: unfollowUser - Unfollows a user previously followed by the current user.
+      operationId: unfollowUser
+      responses:
+        '200':
+          description: User successfully unfollowed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '400':
+          description: Incorrect request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/followed:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    get:
+      tags: ["User interaction"]
+      summary: getFollowed - Retrieves a list of users followed by the current user.
+      operationId: getFollowed
+      responses:
+        '200':
+          description: Followed list successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/photos:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    post:
+      tags: ["Photo"]
+      summary: uploadPhoto - Uploads a new photo to the current user's profile.
+      operationId: uploadPhoto
+      requestBody:
+        description: The photo to upload
+        content:
+          image/png:
+            schema:
+              $ref: "#/components/schemas/Photo"
+      responses:
+        '201':
+          description: Photo successfully uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/photos/{photoId}:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    - $ref: "#/components/parameters/PhotoId"
+    delete:
+      tags: ["Photo"]
+      summary: deletePhoto - Deletes a previously uploaded photo.
+      operationId: deletePhoto
+      responses:
+        '200':
+          description: Photo successfully deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+          
+  /photos/{photoId}:
+    parameters:
+    - $ref: "#/components/parameters/PhotoId"
+    get:
+      tags: ["Photo"]
+      summary: getPhoto - Retrieves a photo by photo ID.
+      operationId: getPhoto
+      security: []
+      responses:
+        '200':
+          description: Photo successfully retrieved
+          content:
+            image/png:
+              schema:
+                $ref: "#/components/schemas/Photo"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/likes/{photoId}:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    - $ref: "#/components/parameters/PhotoId"
+    put:
+      tags: ["Photo interaction"]
+      summary: likePhoto - Marks a StreamPost as liked by the current user.
+      operationId: likePhoto
+      responses:
+        '200':
+          description: Photo successfully liked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '400':
+          description: Incorrect request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+    delete:
+      tags: ["Photo interaction"]
+      summary: unlikePhoto - Removes current user's like from a StreamPost.
+      operationId: unlikePhoto
+      responses:
+        '200':
+          description: Photo successfully unliked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '400':
+          description: Incorrect request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/comments/{photoId}:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    - $ref: "#/components/parameters/PhotoId"
+    post:
+      tags: ["Photo interaction"]
+      summary: commentPhoto - Adds a comment by the current user.
+      operationId: commentPhoto
+      requestBody:
+        description: The contents of the comment to be uploaded
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentContents"
+      responses:
+        '201':
+          description: Comment successfully uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+
+  /users/{user}/comments/{photoId}/{commentId}:
+    parameters:
+    - $ref: "#/components/parameters/CurrentUser"
+    - $ref: "#/components/parameters/PhotoId"
+    - $ref: "#/components/parameters/CommentId"
+    delete:
+      tags: ["Photo interaction"]
+      summary: uncommentPhoto - Removes a comment left by the current user.
+      operationId: uncommentPhoto
+      responses:
+        '200':
+          description: Comment successfully removed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '401':
+          description: Action unauthorized - invalid user token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmptyResponse"
+          
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: string
+      description: "Use a Bearer token for authentication. Obtain your token from the authentication endpoint."
+      
+  schemas:
+    UserName:
+      description: A username serving as a unique user ID
+      type: string
+      pattern: '^.*?$'
+      minLength: 3
+      maxLength: 16
+      example: rodi
+  
+    Timestamp:
+      description: UNIX date and time information
+      type: integer
+      example: 1707134325
+      
+    UserList:
+      description: A list of usernames
+      type: array
+      items:
+        $ref: "#/components/schemas/UserName"
+        
+    UserToken:
+      description: A user session token
+      type: integer
+      example: 8
+      
+    CommentId:
+      description: ID of a comment
+      type: integer
+      example: 1234567890
+      
+    CommentContents:
+      description: The text contents of a comment
+      type: string
+      pattern: '^.*?$'
+      example: "i love dogs.."
+      minLength: 1
+      maxLength: 256 
+      
+    Comment:
+      description: A comment with metadata
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/CommentId"
+        user:
+          $ref: "#/components/schemas/UserName"
+        timestamp:
+          $ref: "#/components/schemas/Timestamp"
+        content:
+          $ref: "#/components/schemas/CommentContents"
+          
+    Photo:
+      description: A PNG image in raw binary format
+      type: string
+      format: binary
+      
+    
+    PhotoId:
+      description: ID of a photo
+      type: integer
+      example: 19
+      
+    
+    StreamPost:
+      description: A photo ID with metadata - a StreamPost
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/PhotoId"
+        user:
+          $ref: "#/components/schemas/UserName"
+        timestamp:
+          $ref: "#/components/schemas/Timestamp"
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+        likes:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserName"
+            
+    
+    StreamPostList:
+      description: A list of StreamPost objects
+      type: array
+      items:
+        $ref: "#/components/schemas/StreamPost"
+
+    EmptyResponse:
+      description: Returned when the respone is empty
+      type: object    
+
+      
+  parameters:
+    CurrentUser:
+      name: user
+      in: path
+      required: true
+      description: "The name of the user"
+      schema:
+        description: "The name of the user"
+        type: string
+        pattern: '^.*?$'
+        example: "mimi"
+        minLength: 3
+        maxLength: 16
+        
+    TargetUser:
+      name: targetUser
+      in: path
+      required: true
+      description: "The name of the target user"
+      schema:
+        description: "The name of the target user"
+        type: string
+        pattern: '^.*?$'
+        example: "mimi"
+        minLength: 3
+        maxLength: 16
+        
+    PhotoId:
+      name: photoId
+      in: path
+      required: true
+      description: "ID of the photo"
+      schema:
+        description: "ID of the photo"
+        type: integer
+        example: 5
+        readOnly: true
+        
+    CommentId:
+      name: commentId
+      in: path
+      required: true
+      description: "ID of the comment"
+      schema:
+        description: "ID of the comment"
+        type: integer
+        example: 7
+        readOnly: true
+        
+
