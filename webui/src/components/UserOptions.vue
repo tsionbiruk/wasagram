@@ -74,13 +74,13 @@ export default {
       <button v-if="isFollow" class="btn btn-sm btn-primary" @click="setFollow(false)">
         Unfollow
       </button>
-      <button v-else class="btn btn-sm btn-outline-primary" @click="setFollow(true)">
+      <button v-else class="btn btn-sm btn-outline-primary" @click="setFollow(true), setBan(false)">
         Follow
       </button>
       <button v-if="isBan" class="btn btn-sm btn-danger" @click="setBan(false)">
         Unban
       </button>
-      <button v-else class="btn btn-sm btn-outline-danger" @click="setBan(true)">
+      <button v-else class="btn btn-sm btn-outline-danger" @click="setBan(true), setFollow(false)">
         Ban
       </button>
     </div>

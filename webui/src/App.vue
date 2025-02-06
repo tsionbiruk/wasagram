@@ -31,12 +31,12 @@ export default {
 				<div class="position-sticky pt-3 sidebar-sticky">
 					<ul class="nav flex-column">
 						<li class="nav-item">
-							<RouterLink :to="`/${username}/stream`" class="nav-link">
+							<RouterLink to="/" class="nav-link">
 								Photo Stream
 							</RouterLink>
 						</li>
 						<li class="nav-item">
-							<RouterLink :to="`/${username}/profile`" class="nav-link">
+							<RouterLink to="/profile" class="nav-link">
 								My Profile
 							</RouterLink>
 						</li>
@@ -47,11 +47,10 @@ export default {
 						</li>
 						<li>
 							<button type="button" style="margin: 10px 0px 0px 15px" class="btn btn-sm btn-outline-secondary" @click="logout">
-								{{ username }}: Log out
+								{{ this.$username.value }}: Log out
 							</button>
 						</li>
 					</ul>
-
 				</div>
 			</nav>
 			<nav v-else id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">

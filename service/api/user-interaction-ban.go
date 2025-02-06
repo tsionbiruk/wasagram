@@ -53,6 +53,22 @@ func (rt *_router) putBanned(w http.ResponseWriter, r *http.Request, ps httprout
 		return
 	}
 
+	// unfollow after banning
+	err = rt.db.UserUnfollow(user_id, target_id)
+	if err != nil {
+		log.Printf("Failed to unfollow user %d -> %d: %v", user_id, target_id, err)
+		http.Error(w, `{"error": "Database error unfollowing user afetr banning"}`, http.StatusInternalServerError)
+		return
+	}
+
+	// remove banned user from followers list
+	err = rt.db.UserUnfollow(target_id, user_id)
+	if err != nil {
+		log.Printf("Failed to remove user fromm follower list %d -> %d: %v", target_id, user_id, err)
+		http.Error(w, `{"error": "Database error unfollowing user afetr banning"}`, http.StatusInternalServerError)
+		return
+	}
+
 	log.Printf("User %s successfully banned %s", username, target_name)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "User banned successfully"})
