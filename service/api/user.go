@@ -70,10 +70,10 @@ func (rt *_router) postUsername(w http.ResponseWriter, r *http.Request, ps httpr
 
 	var newname string
 
-	if newname == "" {
-		http.Error(w, "Invalid username!", http.StatusBadRequest)
-		return
-	}
+	// if newname == "" {
+	// http.Error(w, "Invalid username!", http.StatusBadRequest)
+	// return
+	// }
 
 	err = json.Unmarshal(body, &newname)
 	if err != nil {

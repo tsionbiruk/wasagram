@@ -1,115 +1,110 @@
 <script>
 export default {
-	props: ['username'],
-	data: function() {
-		return {
-			isfollow: false,
-			isban: false,
+  props: ['username'],
+  data() {
+    return {
+      isFollow: false,
+      isBan: false,
+      errorMsg: '',
+    };
+  },
+  created() {
+    this.refresh();
+  },
+  methods: {
+    async refresh() {
+      if (!this.$token?.value) return;
+
+      try {
+        const bannedResponse = await this.$axios.get(`/users/${this.$username.value}/banned`, {
+          headers: { Authorization: this.$token.value },
+        });
+        this.isBan = bannedResponse.data.includes(this.username);
+      } catch (error) {
+        console.error('Error fetching banned users:', error);
+      }
+
+      try {
+        const followResponse = await this.$axios.get(`/users/${this.$username.value}/followed`, {
+          headers: { Authorization: this.$token.value },
+        });
+        this.isFollow = followResponse.data.includes(this.username);
+      } catch (error) {
+        console.error('Error fetching followed users:', error);
+      }
+    },
+    async setFollow(state) {
+      try {
+        await this.$axios({
+          method: state ? 'put' : 'delete',
+          url: `/users/${this.$username.value}/followed/${this.username}`,
+          headers: { Authorization: this.$token.value },
+        });
+        this.isFollow = state;
+        this.$emit('changed');
+      } catch (error) {
+        console.error('Error updating follow status:', error);
+      }
+    },
+    async setBan(state) {
+		try {
+			await this.$axios({
+			method: state ? 'put' : 'delete',
+			url: `/users/${this.$username.value}/banned/${this.username}`,
+			headers: { Authorization: this.$token.value },
+			});
+			this.isBan = state;
+			this.$emit('changed');
+		} catch (error) {
+			console.error('Ban request failed:', error.response?.data || error.message);
+			this.errorMsg = error.response
+			? `Error ${error.response.status}: ${error.response.data?.message || error.response.statusText}`
+			: 'An unexpected error occurred.';
 		}
 	},
-	created() {
-		this.refresh();
-	},
-	methods: {
-		refresh() {
-			if (!this.$token.value) {
-				return;
-			}
-			this.$axios({
-				method: 'get',
-				url: `/users/${this.$username.value}/banned`,
-				headers: {Authorization: this.$token.value},
-			})
-			.then(response => {
-				let banned = response.data;
-				for (let i = 0; i < banned.length; i++) {
-					if (this.username == banned[i]) {
-						this.isban = true;
-						break;
-					}
-				}
-			})
-			.catch(error => {
-				console.error(error.response);
-			});
 
-			this.$axios({
-				method: 'get',
-				url: `/users/${this.$username.value}/followed`,
-				headers: {Authorization: this.$token.value},
-			})
-			.then(response => {
-				let following = response.data;
-				for (let i = 0; i < following.length; i++) {
-					if (this.username == following[i]) {
-						this.isfollow = true;
-						break;
-					}
-				}
-			})
-			.catch(error => {
-				console.error(error.response);
-			});
-		},
-		setfollow(state) {
-			this.$axios({
-				method: state ? 'put' : 'delete',
-				url: `/users/${this.$username.value}/followed/${this.username}`,
-				headers: {Authorization: this.$token.value},
-			})
-			.then(_ => {
-				this.isfollow = state;
-				this.$emit('changed');
-			})
-			.catch(error => {
-				console.error(error.response);
-			});
-		},
-		setban(state) {
-			this.$axios({
-				method: state ? 'put' : 'delete',
-				url: `/users/${this.$username.value}/banned/${this.username}`,
-				headers: {Authorization: this.$token.value},
-			})
-			.then(_ => {
-				this.isban = state;
-				this.$emit('changed');
-			})
-			.catch(error => {
-				console.error(error.response);
-			});
-		},
-	},
-}
+  },
+};
 </script>
 
 <template>
-<div id="users-entry" class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center" style="max-width: 1000px; background-color: rgb(212, 204, 188) ; border-radius: 10px; margin: 0 auto; margin-top: 20px; padding: 20px;">
-	<span>{{ username }}</span>
-	<div v-if="this.$token.value && username != this.$username.value">
-		<button v-if="this.isfollow" type="button" class="btn btn-sm btn-primary" @click="setfollow(false)">
-			Unfollow
-		</button>
-		<button v-else type="button" class="btn btn-sm btn-outline-primary" @click="setfollow(true)">
-			Follow
-		</button>
-		<button v-if="this.isban" type="button" class="btn btn-sm btn-danger" @click="setban(false)">
-			Unban
-		</button>
-		<button v-else type="button" class="btn btn-sm btn-outline-danger" @click="setban(true)">
-			Ban
-		</button>
-	</div>
-	<div v-else-if="this.$token.value && username == this.$username.value">
-		<p><b>You!</b></p>
-	</div>
-</div>
+  <div id="users-entry" class="user-entry">
+    <span>{{ username }}</span>
+    <div v-if="$token?.value && username !== $username.value">
+      <button v-if="isFollow" class="btn btn-sm btn-primary" @click="setFollow(false)">
+        Unfollow
+      </button>
+      <button v-else class="btn btn-sm btn-outline-primary" @click="setFollow(true)">
+        Follow
+      </button>
+      <button v-if="isBan" class="btn btn-sm btn-danger" @click="setBan(false)">
+        Unban
+      </button>
+      <button v-else class="btn btn-sm btn-outline-danger" @click="setBan(true)">
+        Ban
+      </button>
+    </div>
+    <div v-else-if="$token?.value && username === $username.value">
+      <p><b>You!</b></p>
+    </div>
+    <p v-if="errorMsg" class="error-message">{{ errorMsg }}</p>
+  </div>
 </template>
 
 <style>
-#users-entry {
-	display: flex;
-	flex-flow: row nowrap;
-	justify-content: space-between;
+.user-entry {
+  max-width: 1000px;
+  background-color: rgb(212, 204, 188);
+  border-radius: 10px;
+  margin: 20px auto;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
 }
 </style>

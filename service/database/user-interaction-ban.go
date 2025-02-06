@@ -1,22 +1,30 @@
 package database
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
 )
 
 func (db *appdbimpl) UserBan(user_id int64, target_id int64) error {
 	if user_id != target_id {
-		var exists bool
-		err := db.c.QueryRow("SELECT 1 FROM Bans WHERE user_id=? AND target_id=?", user_id, target_id).Scan(&exists)
-		if !errors.Is(err, sql.ErrNoRows) {
-			return nil
-		}
-		if !exists {
+		var userExists, targetExists bool
 
-			return fmt.Errorf("user %d doesnt exist", target_id)
+		// Check if user_id exists
+		err := db.c.QueryRow("SELECT EXISTS (SELECT 1 FROM Users WHERE user_id=?)", user_id).Scan(&userExists)
+		if err != nil {
+			return err
 		}
+
+		// Check if target_id exists
+		err = db.c.QueryRow("SELECT EXISTS (SELECT 1 FROM Users WHERE user_id=?)", target_id).Scan(&targetExists)
+		if err != nil {
+			return err
+		}
+
+		// If either user_id or target_id does not exist, return an error
+		if !userExists || !targetExists {
+			return fmt.Errorf("one or both users do not exist")
+		}
+
 		_, err = db.c.Exec("INSERT INTO Bans (user_id, target_id) VALUES (?, ?)", user_id, target_id)
 		if err != nil {
 			return err

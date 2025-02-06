@@ -144,19 +144,19 @@ export default {
         <ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-top pt-3 pb-2 mb-3 border-bottom" style="margin-bottom: 20px">
 			<figure>
-					<figcaption><b>Followed users ({{ this.following.length }}):</b></figcaption>
+					<figcaption><b>Following({{ this.following.length }}):</b></figcaption>
 					<ul>
 						<li v-for="name in this.following" :key="name">{{ name }}</li>
 					</ul>
 				</figure>
 				<figure>
-					<figcaption><b>Following users ({{ this.followers.length }}):</b></figcaption>
+					<figcaption><b>Followers ({{ this.followers.length }}):</b></figcaption>
 					<ul >
 						<li v-for="name in this.followers" :key="name">{{ name }}</li>
 					</ul>
 				</figure>
 				<figure>
-					<figcaption><b>Banned users ({{ this.banned.length }}):</b></figcaption>
+					<figcaption><b>Banned  ({{ this.banned.length }}):</b></figcaption>
 					<ul>
 						<li v-for="name in this.banned" :key="name">{{ name }}</li>
 					</ul>
