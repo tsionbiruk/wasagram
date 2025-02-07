@@ -3,8 +3,13 @@
 <script>
 export default {
 	created() {
-		if (!this.$token.value) {
-			this.$router.push('/login');
+		const storedUsername = localStorage.getItem('username');
+    	const storedToken = localStorage.getItem('auth_token');
+
+		if (storedUsername && storedToken) {
+			this.$token.value = storedToken; // Restore session token
+			this.$username.value = storedUsername; // Restore username
+			console.log(`Restored session for username: ${storedUsername}`);
 		}
 	},
 	methods: {

@@ -12,6 +12,12 @@ func (db *appdbimpl) UserFollow(user_id int64, target_id int64) error {
 		if !errors.Is(err, sql.ErrNoRows) {
 			return nil
 		}
+
+		var banned bool
+		err = db.c.QueryRow("SELECT 1 FROM Bans WHERE user_id=? AND target_id=?", target_id, user_id).Scan(&banned)
+		if !errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
 		_, err = db.c.Exec("INSERT INTO Follows (user_id, target_id) VALUES (?, ?)", user_id, target_id)
 		if err != nil {
 			return err

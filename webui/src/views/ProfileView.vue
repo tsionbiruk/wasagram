@@ -26,6 +26,7 @@ export default {
 				headers: {Authorization: this.$token.value},
 			})
 			.then(async response => {
+				console.log(`user ${this.$username.value}`);
 				this.errormsg = null;
 				let photos = response.data.photos;
 				this.following = response.data.following;
@@ -85,8 +86,27 @@ export default {
 				this.refresh();
 			})
 			.catch(error => {
-				this.errormsg = `User rename failed: ${error.response.data}`;
-				console.error(error.response);
+				if (error.response) {
+					const status = error.response.status;
+					const errorMessage = error.response.data;
+
+					
+					if (status === 400 && errorMessage.includes("already exists")) {
+						this.errormsg = "Username is already taken. Please choose another.";
+					} else if (status === 400 && errorMessage.includes("invalid characters")) {
+						this.errormsg = "Username contains invalid characters.";
+					} else if (status === 403) {
+						this.errormsg = "You are not authorized to perform this action.";
+					} else if (status === 500) {
+						this.errormsg = "Username already taken! Please try with a different username.";
+					} else {
+						this.errormsg = `An error occurred: ${errorMessage}`;
+					}
+				} else {
+					this.errormsg = "Network error. Please check your connection.";
+				}
+
+				console.error("Error response:", error.response);
 			});
 		},
 		upload() {

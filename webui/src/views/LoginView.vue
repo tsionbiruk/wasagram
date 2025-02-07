@@ -17,10 +17,12 @@ export default {
 			})
 			.then(response => {
 				this.errormsg = null;
+				localStorage.setItem('auth_token', response.data);
+        		localStorage.setItem('username', this.form.username);
 				this.$token.value = response.data;
 				this.$username.value = this.form.username;
 				this.$router.push('/');
-				console.log(`successfully logged in with token ${this.$token.value}`);
+				console.log(`successfully logged in with token ${this.$username.value}`);
 			})
 			.catch(error => {
 				this.errormsg = `Login failed: ${error.response.data}`;

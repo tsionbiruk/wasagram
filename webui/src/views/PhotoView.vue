@@ -42,7 +42,6 @@ export default {
 						console.error(error);
 					}
 					if (response.data) {
-						// Convert ArrayBuffer to base64, credit: https://stackoverflow.com/a/9458996/10792539
 						let binary = '';
 						let bytes = new Uint8Array(response.data);
 						let len = bytes.byteLength;
@@ -80,7 +79,7 @@ export default {
 			<button v-if="this.$token.value" type="button" class="btn btn-sm btn-outline-secondary" @click="back">
 						Back
 					</button>
-			<LikeButton v-if="this.$photo.value.author != this.$username.value" @changed="refresh"></LikeButton>
+			<LikeButton @changed="refresh"></LikeButton>
 			
 		</div>	
 		<CommentSection @changed="refresh"></CommentSection>

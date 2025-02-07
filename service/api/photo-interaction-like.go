@@ -29,16 +29,6 @@ func (rt *_router) putLike(w http.ResponseWriter, r *http.Request, ps httprouter
 		http.Error(w, fmt.Sprintf("Failed to like the photo: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	author_id, err := rt.db.GetPhotoAuthorId(photo_id)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to like the photo: %s", err.Error()), http.StatusInternalServerError)
-		return
-	}
-
-	if user_id == author_id {
-		http.Error(w, "Cannot like your own photo!", http.StatusBadRequest)
-		return
-	}
 
 	err = rt.db.PhotoLike(user_id, photo_id)
 	if err != nil {
@@ -65,16 +55,6 @@ func (rt *_router) deleteLike(w http.ResponseWriter, r *http.Request, ps httprou
 	user_id, err := rt.db.GetUserIdFromUserName(username)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to unlike the photo: %s", err.Error()), http.StatusInternalServerError)
-		return
-	}
-	author_id, err := rt.db.GetPhotoAuthorId(photo_id)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to unlike the photo: %s", err.Error()), http.StatusInternalServerError)
-		return
-	}
-
-	if user_id == author_id {
-		http.Error(w, "Cannot unlike your own photo!", http.StatusBadRequest)
 		return
 	}
 
