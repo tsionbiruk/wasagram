@@ -94,7 +94,7 @@ export default {
 <style>
 .user-entry {
   max-width: 1000px;
-  background-color: rgb(212, 204, 188);
+  background-color: rgb(193, 206, 232);
   border-radius: 10px;
   margin: 20px auto;
   padding: 20px;

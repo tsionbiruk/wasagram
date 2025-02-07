@@ -25,7 +25,7 @@ export default {
 </script>
 
 <template>
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center" style="max-width: 800px; background-color: rgb(255, 243, 220) ; border-radius: 10px; margin: 0 auto; margin-top: 20px; padding: 20px;">
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center" style="max-width: 800px; background-color: rgb(141, 164, 207) ; border-radius: 10px; margin: 0 auto; margin-top: 20px; padding: 20px;">
 	<div>
 		<p style= "margin-bottom: 5px; font-weight: bold;" >{{ params.user }}</p>
 		<p>{{ params.content }}</p>

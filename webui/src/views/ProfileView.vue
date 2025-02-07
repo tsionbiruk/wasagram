@@ -165,23 +165,46 @@ export default {
 					</ul>
 				</figure>
 			</div>
-			<h5>My stream:</h5>
 			
+			<div class="d-flex flex-column flex-wrap flex-md-nowrap align-items-between justify-items-center" style="max-width: 1000px; background-color: rgb(255, 255, 255) ; border-radius: 10px; margin-top: 20px; padding: 20px;">
+				<h5>Upload photo:</h5>
+				<input ref="png" @change="upload" type="file">
+			</div>
 			
-			<div v-if="this.photodata.length">
-				<div v-for="photo in this.photodata" :key="-photo.timestamp">
+			<div v-if="this.photodata.length" class="photo-grid">
+				<div v-for="photo in this.photodata" :key="-photo.timestamp" class="photo-item">
 					<StreamPost :params="photo" @deleted="refresh"></StreamPost>
 				</div>
 			</div>
 			<div v-else-if="this.$token.value">
 				<p><br>Your first upload is one click away...</p>
 			</div>
-			<div class="d-flex flex-column flex-wrap flex-md-nowrap align-items-between justify-items-center" style="max-width: 1000px; background-color: rgb(212, 204, 188) ; border-radius: 10px; margin: 0 auto; margin-top: 20px; padding: 20px;">
-				<h5>Upload photo:</h5>
-				<input ref="png" @change="upload" type="file">
-			</div>
+			
 		</div>
 </template>
 
 <style>
+
+
+
+figcaption {
+  font-size: 15px; 
+  font-weight: bold;
+  text-transform: uppercase; 
+  margin-bottom: 5px; 
+}
+
+.photo-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(700px, 1fr)); /* Dynamic column count */
+	gap: 10px; /* Space between items */
+	justify-content: center;
+	padding: 10px;
+}
+
+.photo-item {
+	overflow: hidden;
+	border-radius: 10px;
+}
+
 </style>

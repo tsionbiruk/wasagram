@@ -30,11 +30,11 @@ export default {
 </script>
 
 <template>
-<div class="d-flex flex-column flex-wrap flex-md-nowrap align-items-between justify-items-center" style="max-width: 1000px; background-color: rgb(212, 204, 188) ; border-radius: 10px; margin: 0 auto; margin-top: 20px; padding: 20px;">
-	<div class="align-self-center">
+<div class="d-flex flex-column flex-wrap flex-md-nowrap align-items-between justify-items-center photo-card">
+	<div class="photo-container">
 		<img class="photo" :src="`data:image/png;base64,${params.png64}`" :alt="`photo${params.photoid}`" @click="this.view()">
 	</div>	
-	<div class="d-flex justify-content-between flex-wrap flex-md-nowrap" style="padding:20px;">
+	<div class="d-flex justify-content-between flex-wrap flex-md-nowrap photo-details">
 		<div style="float:left">
 			<p><b>{{ this.datestr }}</b></p>
 			<p><b>Author:</b> {{ params.author }}</p>
@@ -48,6 +48,7 @@ export default {
 		</div>
 	</div>
 </div>
+
 </template>
 
 <style>
@@ -60,5 +61,44 @@ export default {
 	height: auto;
 	border-radius: 5px;
 }
+
+
+.photo-card {
+  max-width: 700px;
+  background-color: rgb(159, 182, 225);
+  border-radius: 25px;
+  margin: 20px auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+.photo-container {
+  padding: 20px;
+  border: 2px solid #fff; 
+  border-radius: 20px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); 
+  background: #ffffff; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.photo {
+  max-width: 100%;
+  max-height: 300px; 
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+
+.photo-details {
+  width: 100%;
+  padding: 10px;
+}
+
 
 </style>

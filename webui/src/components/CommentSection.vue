@@ -49,7 +49,7 @@ export default {
 	margin: 0 auto;
 	margin-top: 20px;
 	padding: 30px;
-	background-color: rgb(255, 243, 220);
+	background-color: rgb(141, 164, 207);
 	max-width: 800px;
 	border-radius: 10px;
 }

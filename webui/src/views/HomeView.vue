@@ -75,7 +75,7 @@ export default {
 <template>
 	<div>
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-			<h1 class="h2">Home Page</h1>
+			<h2 class="h2">Home Page</h2>
 			<div v-if="this.$token.value" class="btn-toolbar mb-2 mb-md-0">
 				<div class="btn-group me-2">
 					<button type="button" class="btn btn-sm btn-outline-secondary" @click="refresh">
@@ -85,11 +85,12 @@ export default {
 			</div>
 		</div>
 
-		<div v-if="this.$token.value && this.photodata.length" style = " align-items: center;">
-			<div v-for="photo in this.photodata" :key="-photo.timestamp">
+		<div v-if="this.$token.value && this.photodata.length" class="photo-grid">
+			<div v-for="photo in this.photodata" :key="-photo.timestamp" class="photo-item">
 				<StreamPost :params="photo" @deleted="refresh"></StreamPost>
 			</div>
 		</div>
+
 		<div v-else-if="this.$token.value">
 			<p>Your feed is empty.</p>
 		</div>
@@ -102,4 +103,17 @@ export default {
 </template>
 
 <style>
+.photo-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(700px, 1fr)); /* Dynamic column count */
+	gap: 10px; /* Space between items */
+	justify-content: center;
+	padding: 10px;
+}
+
+.photo-item {
+	overflow: hidden;
+	border-radius: 10px;
+}
 </style>
+
