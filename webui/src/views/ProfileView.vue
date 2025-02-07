@@ -126,16 +126,19 @@ export default {
 	<div>
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
 		
-			<h1 class="h2">My Profile: {{ this.$username.value }}</h1>
-			<form v-on:submit="rename">
-					<label for="form-username">Change Username</label>
+			
+			
+            <h1 class="h2">{{ this.$username.value }}'s Profile </h1>			
+			<div>
+				
+
+				<form v-on:submit="rename">
+					<label for="form-username">Change Username:</label>
 					<br>
 					<input v-model="form.username" id="form-username">
 					<button class="btn btn-sm btn-outline-secondary" type="submit">Confirm</button>
 			</form>	
-            			
-			<div>
-				<button type="button" class="btn btn-sm btn-outline-secondary" @click="refresh">
+			<button type="button" class="btn btn-sm btn-outline-secondary" @click="refresh">
 					Refresh
 				</button>
 				
@@ -144,29 +147,26 @@ export default {
         <ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
 		<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-top pt-3 pb-2 mb-3 border-bottom" style="margin-bottom: 20px">
 			<figure>
-					<figcaption><b>Following({{ this.following.length }}):</b></figcaption>
+					<figcaption><b>Followers : {{ this.followers.length }}</b></figcaption>
 					<ul>
-						<li v-for="name in this.following" :key="name">{{ name }}</li>
-					</ul>
-				</figure>
-				<figure>
-					<figcaption><b>Followers ({{ this.followers.length }}):</b></figcaption>
-					<ul >
 						<li v-for="name in this.followers" :key="name">{{ name }}</li>
 					</ul>
 				</figure>
 				<figure>
-					<figcaption><b>Banned  ({{ this.banned.length }}):</b></figcaption>
+					<figcaption><b>Following : {{ this.following.length }}</b></figcaption>
+					<ul >
+						<li v-for="name in this.following" :key="name">{{ name }}</li>
+					</ul>
+				</figure>
+				<figure>
+					<figcaption><b>Banned : {{ this.banned.length }}</b></figcaption>
 					<ul>
 						<li v-for="name in this.banned" :key="name">{{ name }}</li>
 					</ul>
 				</figure>
 			</div>
-			<h5>My photo stream:</h5>
-			<div class="d-flex flex-column flex-wrap flex-md-nowrap align-items-between justify-items-center" style="max-width: 1000px; background-color: rgb(212, 204, 188) ; border-radius: 10px; margin: 0 auto; margin-top: 20px; padding: 20px;">
-				<h5>Upload photo:</h5>
-				<input ref="png" @change="upload" type="file">
-			</div>
+			<h5>My stream:</h5>
+			
 			
 			<div v-if="this.photodata.length">
 				<div v-for="photo in this.photodata" :key="-photo.timestamp">
@@ -174,7 +174,11 @@ export default {
 				</div>
 			</div>
 			<div v-else-if="this.$token.value">
-				<p><br>Your own photo stream is empty!</p>
+				<p><br>Your first upload is one click away...</p>
+			</div>
+			<div class="d-flex flex-column flex-wrap flex-md-nowrap align-items-between justify-items-center" style="max-width: 1000px; background-color: rgb(212, 204, 188) ; border-radius: 10px; margin: 0 auto; margin-top: 20px; padding: 20px;">
+				<h5>Upload photo:</h5>
+				<input ref="png" @change="upload" type="file">
 			</div>
 		</div>
 </template>
