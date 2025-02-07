@@ -1,22 +1,41 @@
-FROM golang:1.19.1 AS builder
+# Build using:
+# docker build -t berealwasa-backend:latest -f Dockerfile.backend .
+# Execute the Dockerfile.backend using:
+# docker run -it -p 3000:3000 --rm berealwasa-backend:latest
 
-### Copy Go code
-WORKDIR /src/
+#sets golang:1.19.4 as base image to be used as "backend_compiler"
+FROM golang:1.19.4 as backend_compiler
+
+#executes a command to create the directory /Executable/ in the root file system
+RUN mkdir /Executable/
+
+#This line sets the working directory in the container to /GoFiles/.
+#If the directory does not exist, it will be created.
+WORKDIR /GoFiles/
+
+#copies the current directory (where the Dockerfile is located) on the host machine 
+#to the current directory in the container (/GoFiles/ due to the previous WORKDIR command).
 COPY . .
 
-### Build executables
-RUN go build -o /app/webapi ./cmd/webapi
+#runs the go build command to compile the Go application located in ./cmd/webapi
+#and outputs the executable file to the /Executable/ directory.
+RUN go build -o /Executable/ ./cmd/webapi
 
+#starts a new build stage with the debian:stable base image.
+#(This is a separate stage from the backend_compiler stage.)
+FROM debian:stable
 
-### Create final container
-FROM debian:bullseye
+#This line sets the working directory in this new stage to /executable_backend/.
+#(If the directory does not exist, it will be created.)
+WORKDIR /executable_backend/
 
-### Inform Docker about which port is used
-EXPOSE 3000 4000
+#This line copies the /Executable/ directory from the backend_compiler stage 
+#to the current directory in the new stage (which is /executable_backend/).
+COPY --from=backend_compiler /Executable/ .
 
-### Copy the build executable from the builder image
-WORKDIR /app/
-COPY --from=builder /app/webapi ./
+#This line indicates that the application inside the container will use port 3000.
+EXPOSE 3000
 
-### Executable command
-CMD ["/app/webapi"]
+#sets the default command to run when the container starts. 
+#In this case, it runs the webapi executable that was copied over in a previous step.
+CMD ["./webapi"]
