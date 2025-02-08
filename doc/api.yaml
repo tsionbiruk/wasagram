@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: WASAPhoto
+  title: Wasagram
   description: API documentation for the Wasagram - the wasa photo app.
   version: 1.0.0
 security:
@@ -41,6 +41,8 @@ components:
     UserList:
       description: A list of usernames
       type: array
+      minItems: 0
+      maxItems: 800
       items:
         $ref: "#/components/schemas/UserName"
         
@@ -76,9 +78,14 @@ components:
           $ref: "#/components/schemas/CommentContents"
           
     Photo:
-      description: A PNG image in raw binary format
+      description: Binary representation of the image
       type: string
-      format: binary
+      format: byte
+      pattern: '^[a-zA-Z0-9+/]*={0,2}$'
+      minLength: 1  
+      maxLength: 1000000  
+      example: "SGVsbG8gV29ybGQh"  
+      
       
     
     PhotoId:
@@ -98,11 +105,17 @@ components:
         timestamp:
           $ref: "#/components/schemas/Timestamp"
         comments:
+          description: A list of comments left by multiple users on a post
           type: array
+          minItems: 0
+          maxItems: 800
           items:
             $ref: "#/components/schemas/Comment"
         likes:
+          description:  A list of users that liked a particular post
           type: array
+          minItems: 0
+          maxItems: 800
           items:
             $ref: "#/components/schemas/UserName"
             
@@ -110,8 +123,11 @@ components:
     StreamPostList:
       description: A list of StreamPost objects
       type: array
+      minItems: 0
+      maxItems: 800
       items:
         $ref: "#/components/schemas/StreamPost"
+      
 
     EmptyResponse:
       description: Returned when the respone is empty
@@ -213,6 +229,7 @@ paths:
         - "User"
       summary: "setMyUserName - Updates the username of the current user."
       operationId: setMyUserName
+      description: set or change the username
       requestBody:
         description: "Request payload for username update."
         content:
@@ -248,6 +265,7 @@ paths:
         - "User"
       summary: "getMyStream - Fetches the main page stream for the current user."
       operationId: getMyStream
+      description: Load my stream and display the posts made by other users
       responses:
         '200':
           description: "Stream successfully retrieved."
@@ -277,6 +295,7 @@ paths:
       - "User"
       summary: getUserProfile - Retrieves information necessary to compose the user page for the current user.
       operationId: getUserProfile
+      description: retrive the profile for the current user
       responses:
         '200':
           description: Profile successfully retrieved
@@ -312,6 +331,7 @@ paths:
       tags: ["User"]
       summary: getUsers - Retrieves a list of all users registered in the database.
       operationId: getUsers
+      description: Get all users
       security: []
       responses:
         '200':
@@ -341,6 +361,7 @@ paths:
       tags: ["User interaction"]
       summary: banUser - Marks a user as banned by the current user.
       operationId: banUser
+      description: Add a user to the ban list
       responses:
         '200':
           description: User successfully banned
@@ -370,6 +391,7 @@ paths:
       tags: ["User interaction"]
       summary: unbanUser - Unbans a user previously banned by the current user.
       operationId: unbanUser
+      description: remove a user form the ban list
       responses:
         '200':
           description: User successfully unbanned
@@ -403,6 +425,7 @@ paths:
       tags: ["User interaction"]
       summary: getBanned - Retrieves a list of users banned by the current user.
       operationId: getBanned
+      description: Get a list of users banned by the current user
       responses:
         '200':
           description: Banned list successfully retrieved
@@ -432,6 +455,7 @@ paths:
       tags: ["User interaction"]
       summary: followUser - Marks a user as followed by the current user.
       operationId: followUser
+      description: Add a user to the list of users this user follows
       responses:
         '200':
           description: User successfully followed
@@ -461,6 +485,7 @@ paths:
       tags: ["User interaction"]
       summary: unfollowUser - Unfollows a user previously followed by the current user.
       operationId: unfollowUser
+      description: Remove a user to the list of users this user follows
       responses:
         '200':
           description: User successfully unfollowed
@@ -494,6 +519,7 @@ paths:
       tags: ["User interaction"]
       summary: getFollowed - Retrieves a list of users followed by the current user.
       operationId: getFollowed
+      description: Get a list of users that this user follows
       responses:
         '200':
           description: Followed list successfully retrieved
@@ -521,6 +547,7 @@ paths:
       tags: ["Photo"]
       summary: uploadPhoto - Uploads a new photo to the current user's profile.
       operationId: uploadPhoto
+      description: Adding a photo to my Profile
       requestBody:
         description: The photo to upload
         content:
@@ -555,6 +582,7 @@ paths:
       tags: ["Photo"]
       summary: deletePhoto - Deletes a previously uploaded photo.
       operationId: deletePhoto
+      description: Remove a Photo from my profile
       responses:
         '200':
           description: Photo successfully deleted
@@ -582,6 +610,7 @@ paths:
       tags: ["Photo"]
       summary: getPhoto - Retrieves a photo by photo ID.
       operationId: getPhoto
+      description: Get a particular photo using the photo Id
       security: []
       responses:
         '200':
@@ -611,6 +640,7 @@ paths:
       tags: ["Photo interaction"]
       summary: likePhoto - Marks a StreamPost as liked by the current user.
       operationId: likePhoto
+      description: Add a like to the photo
       responses:
         '200':
           description: Photo successfully liked
@@ -640,6 +670,7 @@ paths:
       tags: ["Photo interaction"]
       summary: unlikePhoto - Removes current user's like from a StreamPost.
       operationId: unlikePhoto
+      description: Remove a Like from the photo
       responses:
         '200':
           description: Photo successfully unliked
@@ -674,6 +705,7 @@ paths:
       tags: ["Photo interaction"]
       summary: commentPhoto - Adds a comment by the current user.
       operationId: commentPhoto
+      description: Add a comment to the photo
       requestBody:
         description: The contents of the comment to be uploaded
         content:
@@ -700,7 +732,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/EmptyResponse"
 
-  /users/{user}/comments/{photoId}/{commentId}:
+  /users/{user}/photos/{photoId}/comments/{commentId}:
     parameters:
     - $ref: "#/components/parameters/CurrentUser"
     - $ref: "#/components/parameters/PhotoId"
@@ -709,6 +741,7 @@ paths:
       tags: ["Photo interaction"]
       summary: uncommentPhoto - Removes a comment left by the current user.
       operationId: uncommentPhoto
+      description: Remove a Comment from the photo
       responses:
         '200':
           description: Comment successfully removed
@@ -729,4 +762,5 @@ paths:
               schema:
                 $ref: "#/components/schemas/EmptyResponse"
           
+    
 

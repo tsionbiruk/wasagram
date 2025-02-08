@@ -10,7 +10,7 @@ export default {
 		remove() {
 			this.$axios({
 				method: 'delete',
-				url: `/users/${this.$username.value}/comments/${this.$photo.value.id}/${this.params.id}`,
+				url: `/users/${this.$username.value}/photos/${this.$photo.value.id}/comments/${this.params.id}`,
 				headers: {Authorization: this.$token.value},
 			})
 			.then(_ => {

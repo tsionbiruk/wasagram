@@ -8,19 +8,16 @@ func (db *appdbimpl) UserBan(user_id int64, target_id int64) error {
 	if user_id != target_id {
 		var userExists, targetExists bool
 
-		// Check if user_id exists
 		err := db.c.QueryRow("SELECT EXISTS (SELECT 1 FROM Users WHERE user_id=?)", user_id).Scan(&userExists)
 		if err != nil {
 			return err
 		}
 
-		// Check if target_id exists
 		err = db.c.QueryRow("SELECT EXISTS (SELECT 1 FROM Users WHERE user_id=?)", target_id).Scan(&targetExists)
 		if err != nil {
 			return err
 		}
 
-		// If either user_id or target_id does not exist, return an error
 		if !userExists || !targetExists {
 			return fmt.Errorf("one or both users do not exist")
 		}

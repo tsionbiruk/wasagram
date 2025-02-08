@@ -49,7 +49,12 @@ func (rt *_router) doLogin(w http.ResponseWriter, r *http.Request, ps httprouter
 		http.Error(w, fmt.Sprintf("Failed to marshal UserId %d: %s", user_id, err.Error()), http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write([]byte(jsonstr))
+
+	_, err = w.Write([]byte(jsonstr))
+	if err != nil {
+
+		return
+	}
 }
 
 func (rt *_router) Authorize(w http.ResponseWriter, r *http.Request, username string) bool {

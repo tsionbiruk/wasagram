@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"io"
+
 	"net/http"
 	"strconv"
 
@@ -74,5 +75,9 @@ func (rt *_router) getPhoto(w http.ResponseWriter, r *http.Request, ps httproute
 		return
 	}
 
-	_, _ = w.Write(photo)
+	_, err = w.Write(photo)
+	if err != nil {
+
+		return
+	}
 }

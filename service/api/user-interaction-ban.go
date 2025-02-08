@@ -71,7 +71,12 @@ func (rt *_router) putBanned(w http.ResponseWriter, r *http.Request, ps httprout
 
 	log.Printf("User %s successfully banned %s", username, target_name)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "User banned successfully"})
+
+	err = json.NewEncoder(w).Encode(map[string]string{"message": "User banned successfully"})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) deleteBanned(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
@@ -119,7 +124,12 @@ func (rt *_router) deleteBanned(w http.ResponseWriter, r *http.Request, ps httpr
 
 	log.Printf("User %s successfully unbanned %s", username, target_name)
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "User unbanned successfully"})
+
+	err = json.NewEncoder(w).Encode(map[string]string{"message": "User unbanned successfully"})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func (rt *_router) getBanned(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {

@@ -29,7 +29,11 @@ func (rt *_router) getStream(w http.ResponseWriter, r *http.Request, ps httprout
 		http.Error(w, fmt.Sprintf("Failed to marshal stream data: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write(jsonstr)
+	_, err = w.Write(jsonstr)
+	if err != nil {
+
+		return
+	}
 }
 func (rt *_router) getProfile(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
 	w.Header().Set("Content-Type", "application/json")
@@ -51,7 +55,11 @@ func (rt *_router) getProfile(w http.ResponseWriter, r *http.Request, ps httprou
 		http.Error(w, fmt.Sprintf("Failed to marshal profile data: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write(jsonstr)
+	_, err = w.Write(jsonstr)
+	if err != nil {
+
+		return
+	}
 }
 
 func (rt *_router) postUsername(w http.ResponseWriter, r *http.Request, ps httprouter.Params, ctx reqcontext.RequestContext) {
@@ -102,5 +110,9 @@ func (rt *_router) getUsers(w http.ResponseWriter, r *http.Request, ps httproute
 		http.Error(w, fmt.Sprintf("Failed to marshal users array: %s", err.Error()), http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write(jsonstr)
+	_, err = w.Write(jsonstr)
+	if err != nil {
+
+		return
+	}
 }

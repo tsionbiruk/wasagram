@@ -85,10 +85,11 @@ func (rt *_router) getFollowed(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 
-	jsonstr, err := json.Marshal(followed)
+	w.WriteHeader(http.StatusOK) // Explicitly set status 200 OK
+
+	err = json.NewEncoder(w).Encode(followed)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("Failed to marshal followed users: %s", err.Error()), http.StatusInternalServerError)
+		http.Error(w, "Failed to encode followed users", http.StatusInternalServerError)
 		return
 	}
-	_, _ = w.Write([]byte(jsonstr))
 }

@@ -1,4 +1,3 @@
-
 # Build using:
 # docker build -t berealwasa-frontend:latest -f Dockerfile.frontend .
 # Execute the Dockerfile.frontend using:
